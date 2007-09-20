@@ -1,0 +1,8 @@
+project Solid is
+   for Object_Dir use "obj";
+   for Source_Files use ("solid.ads");
+   package Builder is
+      for Default_Switches ("Ada")
+         use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1");
+   end Builder;
+end Solid;
