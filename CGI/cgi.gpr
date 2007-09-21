@@ -2,7 +2,8 @@ with "../solid";
 project CGI is
    for Object_Dir use "obj";
    for Source_Files use ("solid-cgi.ads",
-                         "solid-cgi-program.ads");
+                         "solid-cgi-environment.adb",
+                         "solid-cgi-program.adb");
 
    package Builder renames Solid.Builder;
 end CGI;

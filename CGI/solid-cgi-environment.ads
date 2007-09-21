@@ -19,4 +19,12 @@ package Solid.CGI.Environment is
                      Server_Port,
                      Server_Protocol,
                      Server_Software);
+
+   function Value (Name : in Variable) return String;
+   -- Get the CGI environment variable with Name.
+   -- Returns "" (null string) if not found.
+
+   function Value (Name : in String) return String;
+   -- Get the CGI environment variable with Name.
+   -- Returns "" (null string) if not found.
 end Solid.CGI.Environment;
