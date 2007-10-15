@@ -1,5 +1,5 @@
 package Solid.CGI.MIME is
-   -- Copied from AWS.MIME.
+   -- Shamelessly copied from AWS.MIME.
 
    ----------
    -- Text --
