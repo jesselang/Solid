@@ -1,6 +1,9 @@
 project Solid is
    for Object_Dir use "obj";
-   for Source_Files use ("solid.ads");
+   for Source_Files use
+      ("solid.ads",
+       "solid-data_structures.ads",
+       "solid-data_structures-hashed_multimaps.adb");
    package Builder is
       for Default_Switches ("Ada")
          use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1");
