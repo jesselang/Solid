@@ -2,6 +2,10 @@ project Solid is
    for Object_Dir use "obj";
    for Source_Files use
       ("solid.ads",
+       "solid-cgi.ads",
+       "solid-cgi-environment.adb",
+       "solid-cgi-headers.adb",
+       "solid-cgi-mime.ads",
        "solid-data_structures.ads",
        "solid-data_structures-hashed_multimaps.adb");
    package Builder is
