@@ -7,6 +7,10 @@ package body Solid.CGI.Headers is
    end Add;
 
    procedure Iterate (Item : in List) is
+      procedure Each_Name (Name : in String; Continue : in out Boolean) is
+      begin -- Each_Name
+         null;
+      end Each_Name;
    begin -- Iterate
       null;
    end Iterate;
