@@ -20,6 +20,8 @@ package Solid.Data_Structures.Hashed_Multimaps is
                      Key       : in     Map_Key;
                      New_Item  : in     Element);
 
+   function Key (Position : Cursor) return Map_Key;
+
    generic -- Iterate
       with procedure Process (Position : in Cursor; Continue : in out Boolean);
    procedure Iterate (Container : in Map);

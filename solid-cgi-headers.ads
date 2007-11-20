@@ -7,9 +7,9 @@ package Solid.CGI.Headers is
 
    procedure Add (To : in out List; Name : in String; Value : in String);
 
-   procedure Read (Request : in out List);
-
-   procedure Write (Response : in out List);
+   generic
+      with procedure Process (Name : in String; Values : in String);
+   procedure Iterate (Item : in List);
 private -- Solid.CGI.Headers
    package Implementation is new Data_Structures.Hashed_Multimaps (Map_Key         => Ada.Strings.Unbounded.Unbounded_String,
                                                                    Element         => Ada.Strings.Unbounded.Unbounded_String,

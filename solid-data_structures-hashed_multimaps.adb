@@ -25,6 +25,11 @@ package body Solid.Data_Structures.Hashed_Multimaps is
       end if;
    end Append;
 
+   function Key (Position : Cursor) return Map_Key is
+   begin -- Key
+      return Map_Implementation.Key (Position => Position.Handle);
+   end Key;
+
    procedure Iterate (Container : in Map) is
       Continue : Boolean := True;
 

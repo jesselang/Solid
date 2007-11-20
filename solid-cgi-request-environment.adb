@@ -1,6 +1,6 @@
 with Ada.Environment_Variables;
 
-package body Solid.CGI.Environment is
+package body Solid.CGI.Request.Environment is
    function Value (Name : in Variable) return String is
    begin -- Value
       return Value (Name => Variable'Image (Name) );
@@ -15,4 +15,4 @@ package body Solid.CGI.Environment is
          return "";
       end if;
    end Value;
-end Solid.CGI.Environment;
+end Solid.CGI.Request.Environment;

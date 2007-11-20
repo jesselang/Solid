@@ -1,4 +1,4 @@
-package Solid.CGI.Environment is
+private package Solid.CGI.Request.Environment is
 
    type Variable is (Auth_Type,
                      Content_Length,
@@ -27,4 +27,4 @@ package Solid.CGI.Environment is
    function Value (Name : in String) return String;
    -- Get the CGI environment variable with Name.
    -- Returns "" (null string) if not found.
-end Solid.CGI.Environment;
+end Solid.CGI.Request.Environment;
