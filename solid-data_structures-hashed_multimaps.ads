@@ -10,7 +10,7 @@ generic -- Solid.Data_Structures.Hashed_Multimaps
    with function Equivalent_Keys (Left, Right : Map_Key) return Boolean;
    with function "=" (Left, Right : Element) return Boolean is <>;
 package Solid.Data_Structures.Hashed_Multimaps is
-   type Map is private;
+   type Map is tagged private;
    type Cursor is private;
 
    Empty_Map  : constant Map;
@@ -37,7 +37,7 @@ private -- Solid.Data_Structures.Hashed_Multimaps
                                                                  Hash            => Hash,
                                                                  Equivalent_Keys => Equivalent_Keys,
                                                                  "="             => Element_Implementation."=");
-   type Map is record
+   type Map is tagged record
       Handle : Map_Implementation.Map;
    end record;
 

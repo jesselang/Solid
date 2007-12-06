@@ -1,4 +1,4 @@
-private package Solid.CGI.Request.Environment is
+package Solid.CGI.Request.Environment is
 
    type Variable is (Auth_Type,
                      Content_Length,

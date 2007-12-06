@@ -1,7 +1,12 @@
+with Solid.CGI.Request;
+with Solid.CGI.Response;
 
-generic -- Solid.CGI.Program
-   Implementation : Dispatchers.Handler;
 package Solid.CGI.Program is
+
+   function Request return Request.Data;
+
+   procedure Send (Answer : Response.Data);
+
    pragma Elaborate_Body;
    -- Request
    -- Response
