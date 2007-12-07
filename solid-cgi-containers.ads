@@ -1,8 +1,4 @@
 package Solid.CGI.Containers is
-   type Count is new Natural;
-   type Value_Index is new Positive;
-
-   First_Value : constant Value_Index;
-private -- Solid.CGI.Containers
-   First_Value : constant Value_Index := 1;
+   type Count is range 0 .. Integer'Last;
+   subtype Index is Count range 1 .. Count'Last;
 end Solid.CGI.Containers;

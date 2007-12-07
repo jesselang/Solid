@@ -12,13 +12,33 @@ generic -- Solid.Data_Structures.Hashed_Multimaps
 package Solid.Data_Structures.Hashed_Multimaps is
    type Map is tagged private;
    type Cursor is private;
+   subtype Index is Count range 1 .. Count'Last;
 
    Empty_Map  : constant Map;
    No_Element : constant Cursor;
 
+   function Length (Container : Map) return Count;
+
+   function Values (Container : Map; Key : Map_Key) return Count;
+
+   procedure Clear (Container : in out Map);
+   -- Removes all elements from Container, resulting in an Empty_Map.
+
+   function Exist (Container : Map; Key : Map_Key) return Boolean;
+
+   function Get (Container : Map; Key : Map_Key; Position : Index := Index'First) return Element;
+
    procedure Append (Container : in out Map;
                      Key       : in     Map_Key;
                      New_Item  : in     Element);
+   -- Creates Key if it doesn't exist in Container.
+   -- Appends New_Item to the list of values for Key.
+   -- Raise Map_Failure if an error occurs.
+
+   procedure Update (Container : in out Map;
+                     Key       : in     Map_Key;
+                     New_Item  : in     Element;
+                     Position  : in     Index := Index'First);
 
    function Key (Position : Cursor) return Map_Key;
 
@@ -31,7 +51,7 @@ package Solid.Data_Structures.Hashed_Multimaps is
    procedure Iterate_Values (Container : in Map;
                              Position  : in Cursor);
 private -- Solid.Data_Structures.Hashed_Multimaps
-   package Element_Implementation is new Ada.Containers.Vectors (Index_Type => Positive, Element_Type => Element);
+   package Element_Implementation is new Ada.Containers.Vectors (Index_Type => Index, Element_Type => Element);
    package Map_Implementation is new Ada.Containers.Hashed_Maps (Key_Type        => Map_Key,
                                                                  Element_Type    => Element_Implementation.Vector,
                                                                  Hash            => Hash,
