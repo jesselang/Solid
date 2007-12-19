@@ -1,6 +1,9 @@
-private with Ada.Calendar;
 private with Ada.Strings.Unbounded;
-private with Solid.CGI.Headers;
+
+with Ada.Calendar;
+
+with Solid.CGI.Headers;
+
 
 with Ada.Finalization;
 
@@ -10,6 +13,10 @@ package Solid.CGI.Request is
    type Data is new Ada.Finalization.Controlled with private;
 
    function Method (Request : Data) return Request_Method;
+
+--   function URI (Request : Data) return String;
+
+--   function Parameters (Request : Data) return
 
    -- To be used by the response package, not for external use.
 --   type Request_Identifier is private;
@@ -22,7 +29,7 @@ private -- Solid.CGI.Request
    type Data is new Ada.Finalization.Controlled with record
 --      Identifier      : Request_Identifier;
       Created         : Ada.Calendar.Time;
-      Handled         : Boolean := False;
+--      Handled         : Boolean := False;
       Method          : Request_Method;
       URI             : Ada.Strings.Unbounded.Unbounded_String;
       Message_Headers : Headers.List;

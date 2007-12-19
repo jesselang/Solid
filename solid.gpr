@@ -6,15 +6,17 @@ project Solid is
        "solid-cgi-containers.ads",
        "solid-cgi-containers-tables.adb",
        "solid-cgi-containers-tables-set.adb",
-       "solid-cgi-headers.adb",
+       "solid-cgi-headers.ads",
        "solid-cgi-mime.ads",
+       "solid-cgi-parameters.ads",
        "solid-cgi-request.adb",
        "solid-cgi-request-environment.adb",
        "solid-data_structures.ads",
        "solid-data_structures-hashed_multimaps.adb",
-       "solid-strings.ads");
+       "solid-strings.ads",
+       "solid-text_streams.adb");
    package Builder is
       for Default_Switches ("Ada")
-         use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1");
+         use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1", "-j2");
    end Builder;
 end Solid;
