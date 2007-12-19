@@ -1,11 +1,9 @@
-private with Ada.Strings.Unbounded;
+private with Solid.Strings;
 
 with Ada.Calendar;
-
-with Solid.CGI.Headers;
-
-
 with Ada.Finalization;
+with Solid.CGI.Headers;
+with Solid.CGI.Parameters;
 
 package Solid.CGI.Request is
    type Request_Method is (Get, Post);
@@ -14,26 +12,19 @@ package Solid.CGI.Request is
 
    function Method (Request : Data) return Request_Method;
 
---   function URI (Request : Data) return String;
+   function URI (Request : Data) return String;
 
---   function Parameters (Request : Data) return
+   function Headers (Request : Data) return CGI.Headers.List;
 
-   -- To be used by the response package, not for external use.
---   type Request_Identifier is private;
-
---   procedure Release (Identifier : in Request_Identifier);
-   -- Releases Identifier to be used for another request/response pair.
+   function Parameters (Request : Data) return CGI.Parameters.List;
 private -- Solid.CGI.Request
---   type Request_Identifier is new Integer;
-
    type Data is new Ada.Finalization.Controlled with record
---      Identifier      : Request_Identifier;
-      Created         : Ada.Calendar.Time;
---      Handled         : Boolean := False;
-      Method          : Request_Method;
-      URI             : Ada.Strings.Unbounded.Unbounded_String;
-      Message_Headers : Headers.List;
-      Message_Body    : Ada.Strings.Unbounded.Unbounded_String;
+      Created            : Ada.Calendar.Time;
+      Method             : Request_Method;
+      URI                : Strings.U_String;
+      Message_Headers    : CGI.Headers.List;
+      Message_Parameters : CGI.Parameters.List;
+      Message_Body       : Strings.U_String;
    end record;
 
    overriding procedure Initialize (Object : in out Data);
