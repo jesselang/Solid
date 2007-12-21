@@ -53,7 +53,7 @@ package body Solid.Text_Streams is
    begin -- Read_Element
       Ada.Streams.Read (Stream => Stream.Stream.all, Item => Buffer, Last => Last);
 
-      if Last = Buffer'First - 1 then
+      if Last = 0 then
          raise End_Of_Stream;
       end if;
 
@@ -83,6 +83,24 @@ package body Solid.Text_Streams is
    -- Sets Stream.First_Element to that element and sets Stream.Read_First_Element to True.
    -- Raises End_Of_Stream if the stream has ended.
 
+   procedure Get_First_Element (Stream : in out Text_Stream;
+                                Buffer :    out Ada.Streams.Stream_Element_Array;
+                                Last   :    out Ada.Streams.Stream_Element_Offset);
+   -- Puts the cached first element of Stream into Buffer, sets Last to Buffer'First.
+   pragma Inline (Get_First_Element);
+
+   procedure Get_First_Element (Stream : in out Text_Stream;
+                                Buffer :    out Ada.Streams.Stream_Element_Array;
+                                Last   :    out Ada.Streams.Stream_Element_Offset)
+   is
+   begin -- Get_First_Element
+      if Stream.Read_First_Element then
+         Buffer (Buffer'First)     := Stream.First_Element;
+         Last                      := Buffer'First;
+         Stream.Read_First_Element := False;
+      end if;
+   end Get_First_Element;
+
    procedure Read (Stream : in out Text_Stream; Item : out String; Last : out Natural) is
       use Ada.Streams;
 
@@ -92,22 +110,16 @@ package body Solid.Text_Streams is
       Skip_Line_Terminators (Stream => Stream);
       -- Stream.Read_First_Element will always be True, and Stream.First_Element should always be a non-terminator.
 
-      if Item'Length <= 0 then
-         Last := 0;
+      if Item'Length = 0 then
+         Last := Item'First - 1;
 
          return;
       end if;
 
-      Buffer (Buffer'First)     := Stream.First_Element;
-      Buffer_Last               := Buffer'First;
-      Stream.Read_First_Element := False;
+      Get_First_Element (Stream => Stream, Buffer => Buffer, Last => Buffer_Last);
 
       if Buffer'Length > 1 then
          Read (Stream => Stream.Stream.all, Item => Buffer (Buffer'First + 1 .. Buffer'Last), Last => Buffer_Last);
-
-         if Buffer_Last = Buffer'First - 1 then
-            Buffer_Last := Buffer'First;
-         end if;
       end if;
 
       Item (Item'First .. Natural (Buffer_Last) ):= To_String (Buffer (Buffer'First .. Buffer_Last) );
@@ -158,25 +170,21 @@ package body Solid.Text_Streams is
       use Ada.Streams;
 
       Buffer      : Stream_Element_Array (Stream_Element_Offset (Item'First) .. Stream_Element_Offset (Item'Last) );
-      Buffer_Last : Stream_Element_Offset := 0;
+      Buffer_Last : Stream_Element_Offset := Buffer'First - 1;
    begin -- Read_Line
-      if Stream.Read_First_Element then
+      if Item'Length = 0 then
+         Last := Item'First - 1;
+
+         return;
+      elsif Stream.Read_First_Element then
          if Is_Line_Ending (Stream.First_Element) then
             Stream.Read_First_Element := False;
-            Last := 0;
+            Last := Item'First - 1;
             Skip_Full_Terminator (Stream => Stream);
 
             return;
          else
-            if Item'Length <= 0 then
-               Last := 0;
-
-               return;
-            end if;
-
-            Buffer (Buffer'First)     := Stream.First_Element;
-            Buffer_Last               := Buffer'First;
-            Stream.Read_First_Element := False;
+            Get_First_Element (Stream => Stream, Buffer => Buffer, Last => Buffer_Last);
 
             if Item'Length = 1 then
                Item (Item'First) := To_Character (Buffer (Buffer_Last) );
@@ -187,21 +195,24 @@ package body Solid.Text_Streams is
          end if;
       end if;
 
-      for I in Buffer_Last + 1 .. Buffer'Last loop
+      -- for I in Buffer_Last + 1 .. Buffer'Last loop
+      loop
          Read_Element (Stream => Stream, Item => Stream.First_Element);
 
-         exit when Is_Line_Ending (Stream.First_Element);
+         if Is_Line_Ending (Stream.First_Element) then
+            Skip_Full_Terminator (Stream => Stream);
+
+            exit;
+         end if;
 
          Buffer_Last          := Buffer_Last + 1;
          Buffer (Buffer_Last) := Stream.First_Element;
+
+         exit when Buffer_Last = Buffer'Last;
       end loop;
 
       Item (Item'First .. Natural (Buffer_Last) ):= To_String (Buffer (Buffer'First .. Buffer_Last) );
       Last := Natural (Buffer_Last);
-
-      if Is_Line_Ending (Stream.First_Element) then
-         Skip_Full_Terminator (Stream => Stream);
-      end if;
    end Read_Line;
    -- Reads from Stream until Item is full or a line terminator is found, the line terminator is skipped.
    -- Sets Item to the characters read, sets Last to the last character assigned to Item.
@@ -214,7 +225,7 @@ package body Solid.Text_Streams is
       Stream.Line_Ending := Line_Ending;
    end Create;
 
-   procedure Skip_Line (Stream  : in out Text_Stream; Spacing : in     Positive := 1) is
+   procedure Skip_Line (Stream  : in out Text_Stream; Spacing : in Positive := 1) is
    begin -- Skip_Line
       for Index in 1 .. Spacing loop
          Find_Line_Terminator (Stream => Stream);
