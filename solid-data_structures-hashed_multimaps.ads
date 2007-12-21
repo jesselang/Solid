@@ -19,6 +19,8 @@ package Solid.Data_Structures.Hashed_Multimaps is
 
    function Length (Container : Map) return Count;
 
+   function Values (Container : Map; Position : Cursor) return Count;
+
    function Values (Container : Map; Key : Map_Key) return Count;
 
    procedure Clear (Container : in out Map);

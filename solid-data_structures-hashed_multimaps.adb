@@ -5,19 +5,23 @@ package body Solid.Data_Structures.Hashed_Multimaps is
       return Count (Map_Implementation.Length (Container.Handle) );
    end Length;
 
-   function Values (Container : Map; Key : Map_Key) return Count is
-      Item_Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
-
+   function Values (Container : Map; Position : Cursor) return Count is
       Values : Element_Implementation.Vector;
 
       use type Map_Implementation.Cursor;
    begin -- Values
-      if Item_Position = Map_Implementation.No_Element then
+      if Position.Handle = Map_Implementation.No_Element then
          raise Map_Failure;
       else
-         Values := Map_Implementation.Element (Container.Handle, Key => Key);
+         Values := Map_Implementation.Element (Position.Handle);
          return Count (Element_Implementation.Length (Values) );
       end if;
+   end Values;
+
+   function Values (Container : Map; Key : Map_Key) return Count is
+      Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
+   begin -- Values
+      return Values (Container => Container, Position => (Handle => Position) );
    end Values;
 
    procedure Clear (Container : in out Map) is

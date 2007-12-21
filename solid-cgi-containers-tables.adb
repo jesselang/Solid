@@ -24,8 +24,9 @@ package body Solid.CGI.Containers.Tables is
       procedure Iterate_Keys is new Implementation.Iterate (Process => Keys);
 
       procedure Keys (Position : in Implementation.Cursor; Continue : in out Boolean) is
-         Value_Array : String_Array (Index'First .. Index (Implementation.Values (Container.Handle, Key => +Name) ) );
-         Value_Index : Index := Index'First;
+         Value_Array : String_Array (Positive'First ..
+                                     Positive (Implementation.Values (Container.Handle, Position => Position) ) );
+         Value_Index : Positive := Positive'First;
 
          procedure Values (Value : in U_String; Continue : in out Boolean);
 

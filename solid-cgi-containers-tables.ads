@@ -14,10 +14,8 @@ package Solid.CGI.Containers.Tables is
 
    function Get (Container : Table; Name : String; Position : Index := Index'First) return String;
 
-   type String_Array is array (Index range <>) of Strings.U_String;
-
    generic -- Iterate
-      with procedure Process (Name : in String; Values : in String_Array);
+      with procedure Process (Name : in String; Values : in Strings.String_Array);
    procedure Iterate (Container : in Table);
 
    procedure Add (Container : in out Table; Name : in String; Value : in String);

@@ -7,4 +7,6 @@ package Solid.Strings is
 
    function "+" (Right : String)   return U_String renames Ada.Strings.Unbounded.To_Unbounded_String;
    function "-" (Right : U_String) return String   renames Ada.Strings.Unbounded.To_String;
+
+   type String_Array is array (Positive range <>) of Strings.U_String;
 end Solid.Strings;
