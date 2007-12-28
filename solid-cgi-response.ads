@@ -6,8 +6,8 @@ with Solid.CGI.Request;
 package Solid.CGI.Response is
    type Data is private;
 
-   --~ function Test return Data;
-   --~ pragma Inline (Test);
+   function Test (Client : Request.Data) return Data;
+   pragma Inline (Test);
 
    function Build (Content_Type : String; Message_Body : String) return Data;
 

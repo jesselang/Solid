@@ -15,6 +15,12 @@ package body Solid.CGI.Standard.Environment is
       end if;
    end Value;
 
+   procedure Iterate_Process (Object : in Data; Process : CGI.Environment.Callback) is
+      procedure Iterate is new Environment.Iterate (Process => Process.all);
+   begin -- Iterate_Process
+      Iterate (Object => Object);
+   end Iterate_Process;
+
    procedure Iterate (Object : in Data) is
       Continue : Boolean := True;
 
@@ -29,4 +35,6 @@ package body Solid.CGI.Standard.Environment is
    begin -- Iterate
       Ada.Environment_Variables.Iterate (Process => Iteration_Wrapper'Access);
    end Iterate;
+
+
 end Solid.CGI.Standard.Environment;

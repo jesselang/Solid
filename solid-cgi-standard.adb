@@ -37,8 +37,10 @@ package body Solid.CGI.Standard is
          end if;
 
          Request.Set.Environment (Object => Object, Environment => Environment.Current);
-         --~ Request.Set.Method (Object => Object,
-                             --~ Method => Request.Request_Method'Value (Environment.Value (Environment.Current.all, Name => Environment.Request_Method) ) );
+
+         -- Parse parameters based on method.
+         -- Parse headers.
+         -- Parse payload.
       end Read_Request;
 
       procedure Write_Response (Object : in Response.Data) is

@@ -8,13 +8,57 @@ with Solid.CGI.Headers;
 with Solid.CGI.Parameters;
 
 package Solid.CGI.Request is
-   type Request_Method is (Get, Post);
+   No_Environment : exception;
 
    type Data is new Ada.Finalization.Controlled with private;
 
-   --~ function Method (Object : Data) return Request_Method;
+   type Request_Method is (Get, Post);
 
-   --~ function Path (Object : Data) return String;
+   function Method (Object : Data) return Request_Method;
+
+   function URI (Object : Data) return String;
+
+   function Path (Object : Data) return String;
+
+   function Translated_Path (Object : Data) return String;
+
+   function Query (Object : Data) return String;
+
+   function Program_Name (Object : Data) return String;
+
+   function Script_Name (Object : Data) return String renames Program_Name;
+
+   function Document_Root (Object : Data) return String;
+
+   function User_Agent (Object : Data) return String;
+
+   -- Cookies
+
+   function Host (Object : Data) return String;
+
+   function Server_Name (Object : Data) return String;
+
+   function Server_Admin (Object : Data) return String;
+
+   function Server_Software (Object : Data) return String;
+
+   function Server_Protocol (Object : Data) return String;
+
+   function Server_Signature (Object : Data) return String;
+
+   function Server_Address (Object : Data) return String;
+
+   type Port_Number is range 0 .. 65535;
+
+   No_Port : constant Port_Number := 0;
+
+   function Server_Port (Object : Data) return Port_Number;
+
+   function Remote_Address (Object : Data) return String;
+
+   function Remote_Port (Object : Data) return Port_Number;
+
+   function Environment (Object : Data) return CGI.Environment.Handle;
 
    function Headers (Object : Data) return CGI.Headers.List;
 
@@ -22,8 +66,6 @@ package Solid.CGI.Request is
 private -- Solid.CGI.Request
    type Data is new Ada.Finalization.Controlled with record
       Created            : Ada.Calendar.Time;
-      --~ Method             : Request_Method;
-      --~ Path               : Strings.U_String;
       Environment        : CGI.Environment.Handle;
       Headers            : CGI.Headers.List;
       Parameters         : CGI.Parameters.List;
