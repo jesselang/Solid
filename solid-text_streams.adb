@@ -263,15 +263,7 @@ package body Solid.Text_Streams is
    procedure Put (Stream : in out Text_Stream; Item : in String) is
       use Ada.Streams;
 
-      function To_Stream (Item : String) return Stream_Element_Array is
-         Result : Stream_Element_Array (Stream_Element_Offset (Item'First) .. Stream_Element_Offset (Item'Last) );
-      begin -- To_Stream
-         for Index in Result'Range loop
-            Result (Index) := Stream_Element'Val (Character'Pos (Item (Positive (Index) ) ) );
-         end loop;
 
-         return Result;
-      end To_Stream;
    begin -- Put
       Write (Stream => Stream.Stream.all, Item => To_Stream (Item) );
    end Put;
@@ -295,4 +287,15 @@ package body Solid.Text_Streams is
       Put (Stream => Stream, Item => Item);
       New_Line (Stream => Stream);
    end Put_Line;
+
+   function To_Stream (Item : String) return Ada.Streams.Stream_Element_Array is
+      Result : Ada.Streams.Stream_Element_Array
+                  (Ada.Streams.Stream_Element_Offset (Item'First) .. Ada.Streams.Stream_Element_Offset (Item'Last) );
+   begin -- To_Stream
+      for Index in Result'Range loop
+         Result (Index) := Ada.Streams.Stream_Element'Val (Character'Pos (Item (Positive (Index) ) ) );
+      end loop;
+
+      return Result;
+   end To_Stream;
 end Solid.Text_Streams;

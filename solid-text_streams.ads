@@ -48,6 +48,10 @@ package Solid.Text_Streams is
 
    procedure Put_Line (Stream : in out Text_Stream; Item : in String);
    -- Puts Item to Stream, followed by a line terminator.
+
+   -- Conversion functions.
+   function To_String (Item : Ada.Streams.Stream_Element_Array) return String;
+   function To_Stream (Item : String) return Ada.Streams.Stream_Element_Array;
 private -- Solid.Text_Streams
    type Text_Stream is limited record
       Stream             : access Ada.Streams.Root_Stream_Type'Class;

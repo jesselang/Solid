@@ -1,0 +1,95 @@
+GATEWAY_INTERFACE: CGI/1.1
+
+HTTP_HOST: localhost
+HTTP_USER_AGENT: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071204 Ubuntu/7.10 (gutsy) Firefox/2.0.0.11
+HTTP_ACCEPT: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+HTTP_ACCEPT_LANGUAGE: en-us,en;q=0.5
+HTTP_ACCEPT_ENCODING: gzip,deflate
+HTTP_ACCEPT_CHARSET: ISO-8859-1,utf-8;q=0.7,*;q=0.7
+HTTP_KEEP_ALIVE: 300
+HTTP_CONNECTION: keep-alive
+
+SERVER_SIGNATURE: <address>Apache/2.2.4 (Ubuntu) Server at localhost Port 80</address>
+
+SERVER_SOFTWARE: Apache/2.2.4 (Ubuntu)
+SERVER_NAME: localhost
+SERVER_ADDR: 127.0.0.1
+SERVER_PORT: 80
+SERVER_ADMIN: webmaster@localhost
+SERVER_PROTOCOL: HTTP/1.1
+
+REMOTE_ADDR: 127.0.0.1
+REMOTE_PORT: 35274
+
+DOCUMENT_ROOT: /var/www/
+
+SCRIPT_NAME: /cgi-bin/cgi_test
+SCRIPT_FILENAME: /usr/lib/cgi-bin/cgi_test
+
+QUERY_STRING: some=thing&else=do
+
+REQUEST_METHOD: GET
+REQUEST_URI: /cgi-bin/cgi_test/test?some=thing&else=do
+
+PATH_INFO: /test
+PATH_TRANSLATED: /var/www/test
+
+
+--------------------------------------------------------------------------------------------------
+SCGI: '1'
+
+HTTP_ACCEPT_LANGUAGE: 'en'
+HTTP_ACCEPT_ENCODING: 'gzip,deflate'
+HTTP_ACCEPT:'text/html,text/plain,*/*;q=0.5'
+HTTP_ACCEPT_CHARSET: 'UTF-8,*'
+HTTP_USER_AGENT: 'Mozilla/5.0'
+HTTP_HOST: 'testserver.example.org'
+
+SCRIPT_NAME: '/scgitest'
+
+REQUEST_METHOD: 'GET'
+REQUEST_URI: '/scgitest'
+
+DOCUMENT_ROOT: '/srv/www/'
+
+QUERY_STRING: ''
+CONTENT_LENGTH: '0'
+
+REMOTE_ADDR: '10.99.11.99'
+REMOTE_PORT: '47088'
+
+SERVER_PORT: '80'
+SERVER_ADDR: '192.0.34.166'
+SERVER_NAME: 'testserver.example.org'
+SERVER_ADMIN: 'webmaster@example.org'
+SERVER_SOFTWARE: 'Apache'
+SERVER_PROTOCOL: 'HTTP/1.1'
+-----------------------------------------------------------------------------
+
+Server_Port
+Server_Address
+Server_Name
+Server_Admin
+Server_Software
+Server_Protocol
+Server_Signature
+
+Host
+User_Agent
+Cookies
+Script_Name
+
+Method
+URI
+Path
+Translated_Path
+
+Document_Root
+
+Query
+
+Remote_Address
+Remote_Port
+
+
+

@@ -1,30 +1,31 @@
+with Ada.Calendar;
 with Solid.Strings;
 
 use Solid.Strings;
 
 package body Solid.CGI.Request is
-   function Method (Request : Data) return Request_Method is
-   begin -- Method
-      return Request.Method;
-   end Method;
+   --~ function Method (Object : Data) return Request_Method is
+   --~ begin -- Method
+      --~ return Object.Method;
+   --~ end Method;
 
-   function URI (Request : Data) return String is
-   begin -- URI
-      return -Request.URI;
-   end URI;
+   --~ function Path (Object : Data) return String is
+   --~ begin -- Path
+      --~ return -Object.Path;
+   --~ end Path;
 
-   function Headers (Request : Data) return CGI.Headers.List is
+   function Headers (Object : Data) return CGI.Headers.List is
    begin -- Headers
-      return Request.Message_Headers;
+      return Object.Headers;
    end Headers;
 
-   function Parameters (Request : Data) return CGI.Parameters.List is
+   function Parameters (Object : Data) return CGI.Parameters.List is
    begin -- Parameters
-      return Request.Message_Parameters;
+      return Object.Parameters;
    end Parameters;
 
    overriding procedure Initialize (Object : in out Data) is
    begin -- Initialize
-      null;
+      Object.Created := Ada.Calendar.Clock;
    end Initialize;
 end Solid.CGI.Request;

@@ -1,28 +1,44 @@
+with Ada.Strings.Unbounded;
+--with Solid.CGI.Request.Environment;
 with Solid.Strings;
+with Solid.Text_Streams;
+
 use Solid.Strings;
 
 package body Solid.CGI.Response is
-   function Test return Data is
-   begin -- Test
-      return Build (Content_Type => "text/plain", Message_Body => "This is a test response.");
-   end Test;
+   --~ function Test return Data is
+      --~ Result : Strings.U_String;
+
+      --~ use type Ada.Strings.Unbounded.Unbounded_String;
+
+      --~ procedure Append_Variable (Name : in String; Value : in String; Continue : in out Boolean) is
+      --~ begin -- Append_Variable
+         --~ Result := Result & Name & ": " & Value & ASCII.LF;
+      --~ end Append_Variable;
+
+      --~ procedure Append_Variables is new Request.Environment.Iterate (Process => Append_Variable);
+   --~ begin -- Test
+      --~ Append_Variables;
+
+      --~ return Build (Content_Type => "text/plain", Message_Body => -Result);
+   --~ end Test;
 
    function Build (Content_Type : String; Message_Body : String) return Data is
       Result : Data;
    begin -- Build
-      Result.Message_Headers.Add (Name => "Content-type", Value => Content_Type);
-      Result.Message_Body := +Message_Body;
+      Result.Headers.Add (Name => "Content-type", Value => Content_Type);
+      Result.Payload := +Message_Body;
 
       return Result;
    end Build;
 
    function Headers (Object : Data) return CGI.Headers.List is
    begin -- Headers
-      return Object.Message_Headers;
+      return Object.Headers;
    end Headers;
 
-   function Payload (Object : Data) return String is
+   function Payload (Object : Data) return Ada.Streams.Stream_Element_Array is
    begin -- Payload
-      return -Object.Message_Body;
+      return Text_Streams.To_Stream (-Object.Payload);
    end Payload;
 end Solid.CGI.Response;

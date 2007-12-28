@@ -1,23 +1,24 @@
-private with Ada.Strings.Unbounded;
-
+private with Solid.Strings;
+with Ada.Streams;
 with Solid.CGI.Headers;
 with Solid.CGI.Request;
 
 package Solid.CGI.Response is
    type Data is private;
 
-   function Test return Data;
-   pragma Inline (Test);
+   --~ function Test return Data;
+   --~ pragma Inline (Test);
 
    function Build (Content_Type : String; Message_Body : String) return Data;
 
-
    function Headers (Object : Data) return CGI.Headers.List;
 
-   function Payload (Object : Data) return String;
+   function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
 private -- Solid.CGI.Response
    type Data is record
-      Message_Headers : CGI.Headers.List;
-      Message_Body    : Ada.Strings.Unbounded.Unbounded_String;
+      Headers : CGI.Headers.List;
+      Payload : Strings.U_String;
    end record;
+
+   pragma Assert (Ada.Streams.Stream_Element'Size = 8);
 end Solid.CGI.Response;

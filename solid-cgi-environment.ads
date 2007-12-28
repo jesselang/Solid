@@ -1,10 +1,13 @@
-package Solid.CGI.Request.Environment is
+package Solid.CGI.Environment is
+   type Data is abstract tagged null record;
+   type Handle is access Data'Class;
 
    type Variable is (Auth_Type,
                      Content_Length,
                      Content_Type,
                      Gateway_Interface,
                      HTTP_Accept,
+                     HTTP_Cookies,
                      HTTP_User_Agent,
                      Path_Info,
                      Path_Translated,
@@ -18,13 +21,17 @@ package Solid.CGI.Request.Environment is
                      Server_Name,
                      Server_Port,
                      Server_Protocol,
+                     Server_Signature,
                      Server_Software);
 
-   function Value (Name : in Variable) return String;
+   function Value (Object : Handle; Name : Variable) return String;
    -- Get the CGI environment variable with Name.
    -- Returns "" (null string) if not found.
 
-   function Value (Name : in String) return String;
+   function Value (Object : Handle; Name : String) return String;
    -- Get the CGI environment variable with Name.
    -- Returns "" (null string) if not found.
-end Solid.CGI.Request.Environment;
+
+   -- Abstract operation to be overridden.
+   function Value (Object : Data; Name : String) return String is abstract;
+end Solid.CGI.Environment;
