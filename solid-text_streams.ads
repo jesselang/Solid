@@ -31,11 +31,12 @@ package Solid.Text_Streams is
    -- Raises End_Of_Stream when the end of Stream has been reached.
 
    procedure Get_Line (Stream : in out Text_Stream; Item : out String; Last : out Natural);
-   -- Reads Item from Stream.  Returns when Item is full, in which
-   -- case, Last = Item'Last.  Otherwise, returns when a line terminator is reached,
-   -- in which case, Last is set to the last character of Item before the line
-   -- terminator.
-   -- Raises End_Of_Stream when the end of Stream has been reached.
+   -- Reads Item from Stream.  Returns when Item is full, when a line terminator is reached,
+   -- or when the end of Stream has been reached.  When Item is full, Last is set to
+   -- Item'Last.  When a line terminator is reached, Last is set to the last character of
+   -- Item before the line terminator.  When the end of Stream has been reached, Last is set
+   -- to the last character read.
+   -- Raises End_Of_Stream when the end of Stream has been reached without reading any data.
 
    procedure Put (Stream : in out Text_Stream; Item : in Character);
    -- Puts Item to Stream.

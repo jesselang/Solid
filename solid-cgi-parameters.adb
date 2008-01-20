@@ -1,6 +1,5 @@
 with GNAT.String_Split;
-
---with Solid.CGI.Parameters.Set;
+with Solid.CGI.URL;
 
 package body Solid.CGI.Parameters is
 
@@ -17,7 +16,8 @@ package body Solid.CGI.Parameters is
          Create (Name_Value, From => Slice (Parameters, Index => Index), Separators => "=");
 
          if Slice_Count (Name_Value) = 2 then
-            Result.Add (Name => Slice (Name_Value, Index => 1), Value => Slice (Name_Value, Index => 2) );
+            Result.Add (Name => URL.Decode (Slice (Name_Value, Index => 1) ),
+                        Value => URL.Decode (Slice (Name_Value, Index => 2) ) );
          end if;
       end loop;
 

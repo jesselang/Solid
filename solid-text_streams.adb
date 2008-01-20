@@ -197,7 +197,16 @@ package body Solid.Text_Streams is
 
       -- for I in Buffer_Last + 1 .. Buffer'Last loop
       loop
-         Read_Element (Stream => Stream, Item => Stream.First_Element);
+         begin
+            Read_Element (Stream => Stream, Item => Stream.First_Element);
+         exception
+            when End_Of_Stream =>
+               if Buffer_Last = Buffer'First - 1 then
+                  raise;
+               else
+                  exit;
+               end if;
+         end;
 
          if Is_Line_Ending (Stream.First_Element) then
             Skip_Full_Terminator (Stream => Stream);

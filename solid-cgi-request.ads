@@ -1,8 +1,8 @@
-private with Ada.Streams;
 private with Solid.Strings;
 
 with Ada.Calendar;
 with Ada.Finalization;
+with Ada.Streams;
 with Solid.CGI.Environment;
 with Solid.CGI.Headers;
 with Solid.CGI.Parameters;
@@ -22,6 +22,14 @@ package Solid.CGI.Request is
 
    function Translated_Path (Object : Data) return String;
 
+   type Count is range -1 .. Integer'Last;
+
+   Not_Set : constant Count := -1;
+
+   function Content_Length (Object : Data) return Count;
+
+   function Content_Type (Object : Data) return String;
+
    function Query (Object : Data) return String;
 
    function Program_Name (Object : Data) return String;
@@ -31,6 +39,8 @@ package Solid.CGI.Request is
    function Document_Root (Object : Data) return String;
 
    function User_Agent (Object : Data) return String;
+
+   -- Referrer
 
    -- Cookies
 
@@ -63,10 +73,13 @@ package Solid.CGI.Request is
    function Headers (Object : Data) return CGI.Headers.List;
 
    function Parameters (Object : Data) return CGI.Parameters.List;
+
+   function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
 private -- Solid.CGI.Request
    type Data is new Ada.Finalization.Controlled with record
       Created            : Ada.Calendar.Time;
       Environment        : CGI.Environment.Handle;
+      Post_Query         : Strings.U_String;
       Headers            : CGI.Headers.List;
       Parameters         : CGI.Parameters.List;
       Payload            : Strings.U_String;

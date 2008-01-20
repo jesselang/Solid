@@ -7,15 +7,18 @@ package body Solid.CGI.Containers.Tables is
       return Count (Implementation.Length (Container.Handle) );
    end Size;
 
-   function Exist (Container : Table; Name : String) return Boolean is
-   begin -- Exist
-      return Implementation.Exist (Container.Handle, Key => +Name);
-   end Exist;
+   function Exists (Container : Table; Name : String) return Boolean is
+   begin -- Exists
+      return Implementation.Exists (Container.Handle, Key => +Name);
+   end Exists;
 
    function Get (Container : Table; Name : String; Position : Index := Index'First) return String is
       Value_Index : constant Implementation.Index := Implementation.Index (Position);
    begin -- Get
       return -Implementation.Get (Container.Handle, Key => +Name, Position => Value_Index);
+   exception -- Get
+      when Data_Structures.Map_Failure =>
+         return "";
    end Get;
 
    procedure Iterate (Container : in Table) is
@@ -49,12 +52,18 @@ package body Solid.CGI.Containers.Tables is
    procedure Add (Container : in out Table; Name : in String; Value : in String) is
    begin -- Add
       Implementation.Append (Container => Container.Handle, Key => +Name, New_Item => +Value);
+   exception -- Add
+      when Data_Structures.Map_Failure =>
+         raise Table_Failure;
    end Add;
 
    procedure Update (Container : in out Table; Name : in String; Value : in String; Position : in Index := Index'First) is
       Item_Position : constant Implementation.Index := Implementation.Index (Position);
    begin -- Update
       Implementation.Update (Container => Container.Handle, Key => +Name, New_Item => +Value, Position => Item_Position);
+   exception -- Update
+      when Data_Structures.Map_Failure =>
+         raise Table_Failure;
    end Update;
 
    procedure Clear (Container : in out Table) is

@@ -29,13 +29,13 @@ package body Solid.Data_Structures.Hashed_Multimaps is
       Map_Implementation.Clear (Container => Container.Handle);
    end Clear;
 
-   function Exist (Container : Map; Key : Map_Key) return Boolean is
+   function Exists (Container : Map; Key : Map_Key) return Boolean is
       Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
 
       use type Map_Implementation.Cursor;
-   begin -- Exist
+   begin -- Exists
       return Position = Map_Implementation.No_Element;
-   end Exist;
+   end Exists;
 
    function Get (Container : Map; Key : Map_Key; Position : Index := Index'First) return Element is
       Item_Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
@@ -75,6 +75,9 @@ package body Solid.Data_Structures.Hashed_Multimaps is
                                             Position  => Item_Position,
                                             Process   => Append_To_Values'Access);
       end if;
+   exception -- Append
+      when Constraint_Error | Program_Error =>
+         raise Map_Failure;
    end Append;
 
    procedure Update (Container : in out Map;
@@ -94,11 +97,17 @@ package body Solid.Data_Structures.Hashed_Multimaps is
          Item := Map_Implementation.Element (Item_Position);
          Element_Implementation.Replace_Element (Container => Item, Index => Position, New_Item => New_Item);
       end if;
+   exception -- Update
+      when Constraint_Error | Program_Error =>
+         raise Map_Failure;
    end Update;
 
    function Key (Position : Cursor) return Map_Key is
    begin -- Key
       return Map_Implementation.Key (Position.Handle);
+   exception -- Key
+      when Constraint_Error =>
+         raise Map_Failure;
    end Key;
 
    procedure Iterate (Container : in Map) is

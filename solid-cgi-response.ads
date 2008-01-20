@@ -9,8 +9,12 @@ package Solid.CGI.Response is
    function Test (Client : Request.Data) return Data;
    pragma Inline (Test);
 
-   function Build (Content_Type : String; Message_Body : String) return Data;
+   function Build (Content_Type : String;
+                   Message_Body : String;
+                   Headers      : CGI.Headers.List := CGI.Headers.No_Headers)
+   return Data;
 
+   -- The following functions are designed to be used by the library, not by client applications.
    function Headers (Object : Data) return CGI.Headers.List;
 
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;

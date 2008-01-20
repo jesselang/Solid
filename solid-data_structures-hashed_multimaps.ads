@@ -20,13 +20,15 @@ package Solid.Data_Structures.Hashed_Multimaps is
    function Length (Container : Map) return Count;
 
    function Values (Container : Map; Position : Cursor) return Count;
+   -- Raises Map_Failure if an error occurs.
 
    function Values (Container : Map; Key : Map_Key) return Count;
+   -- Raises Map_Failure if an error occurs.
 
    procedure Clear (Container : in out Map);
    -- Removes all elements from Container, resulting in an Empty_Map.
 
-   function Exist (Container : Map; Key : Map_Key) return Boolean;
+   function Exists (Container : Map; Key : Map_Key) return Boolean;
 
    function Get (Container : Map; Key : Map_Key; Position : Index := Index'First) return Element;
 
@@ -41,8 +43,10 @@ package Solid.Data_Structures.Hashed_Multimaps is
                      Key       : in     Map_Key;
                      New_Item  : in     Element;
                      Position  : in     Index := Index'First);
+   -- Raises Map_Failure if an error occurs.
 
    function Key (Position : Cursor) return Map_Key;
+   -- Raises Map_Failure if an error occurs.
 
    generic -- Iterate
       with procedure Process (Position : in Cursor; Continue : in out Boolean);

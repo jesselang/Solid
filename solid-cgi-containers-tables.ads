@@ -1,16 +1,18 @@
-with Ada.Strings.Unbounded.Hash;
+private with Solid.Data_Structures.Hashed_Multimaps;
 
-with Solid.Data_Structures.Hashed_Multimaps;
+with Ada.Strings.Unbounded.Hash;
 with Solid.Strings;
 
 package Solid.CGI.Containers.Tables is
+   Table_Failure : exception;
+
    type Table is tagged private;
 
    Empty : constant Table;
 
    function Size (Container : Table) return Count;
 
-   function Exist (Container : Table; Name : String) return Boolean;
+   function Exists (Container : Table; Name : String) return Boolean;
 
    function Get (Container : Table; Name : String; Position : Index := Index'First) return String;
 
@@ -19,8 +21,10 @@ package Solid.CGI.Containers.Tables is
    procedure Iterate (Container : in Table);
 
    procedure Add (Container : in out Table; Name : in String; Value : in String);
+   -- Raises Table_Failure if an error occurs.
 
    procedure Update (Container : in out Table; Name : in String; Value : in String; Position : in Index := Index'First);
+   -- Raises Table_Failure if an error occurs.
 
    procedure Clear (Container : in out Table);
 private -- Solid.CGI.Containers.Tables

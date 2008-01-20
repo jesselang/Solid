@@ -1,10 +1,14 @@
+with "../PragmARC/pragmarc";
+
 project Solid is
    for Object_Dir use "obj";
    for Source_Files use
       ("solid.ads",
+       "solid-calendar.ads",
        "solid-cgi.ads",
        "solid-cgi-containers.ads",
        "solid-cgi-containers-tables.adb",
+       "solid-cgi-cookies.adb",
        "solid-cgi-environment.adb",
        "solid-cgi-headers.ads",
        "solid-cgi-mime.ads",
@@ -17,10 +21,15 @@ project Solid is
        "solid-cgi-url.adb",
        "solid-data_structures.ads",
        "solid-data_structures-hashed_multimaps.adb",
+       "solid-debug.ads",
+       "solid-debug-analyzer.adb",
+       "solid-net.ads",
+--       "solid-net-iax.ads",
        "solid-strings.ads",
        "solid-text_streams.adb");
    package Builder is
       for Default_Switches ("Ada")
          use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1", "-j2", "-gnata");
+      -- Option "-gnata" is required for Assert pragmas to be verified.
    end Builder;
 end Solid;

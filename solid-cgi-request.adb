@@ -1,5 +1,6 @@
 with Ada.Calendar;
 with Solid.Strings;
+with Solid.Text_Streams;
 
 use Solid.Strings;
 
@@ -40,10 +41,27 @@ package body Solid.CGI.Request is
       return CGI.Environment.Value (Object.Environment, Name => CGI.Environment.Path_Translated);
    end Translated_Path;
 
+   function Content_Length (Object : Data) return Count is
+   begin -- Content_Length
+      Validate_Environment (Object => Object);
+
+      return Count'Value (CGI.Environment.Value (Object.Environment, Name => CGI.Environment.Content_Length) );
+   exception -- Content_Length
+      when Constraint_Error =>
+         return Not_Set;
+   end Content_Length;
+
+   function Content_Type (Object : Data) return String is
+   begin -- Content_Type
+      Validate_Environment (Object => Object);
+
+      return CGI.Environment.Value (Object.Environment, Name => CGI.Environment.Content_Type);
+   end Content_Type;
+
    function Query (Object : Data) return String is
    begin -- Query
       Validate_Environment (Object => Object);
-
+      -- Method?
       return CGI.Environment.Value (Object.Environment, Name => CGI.Environment.Query_String);
    end Query;
 
@@ -158,6 +176,11 @@ package body Solid.CGI.Request is
    begin -- Parameters
       return Object.Parameters;
    end Parameters;
+
+   function Payload (Object : Data) return Ada.Streams.Stream_Element_Array is
+   begin -- Payload
+      return Text_Streams.To_Stream (-Object.Payload);
+   end Payload;
 
    overriding procedure Initialize (Object : in out Data) is
    begin -- Initialize
