@@ -21,7 +21,7 @@ package body Solid.CGI.Containers.Tables is
          return "";
    end Get;
 
-   procedure Iterate (Container : in Table) is
+   procedure Iterate (Container : in Table'Class) is
       procedure Keys (Position : in Implementation.Cursor; Continue : in out Boolean);
 
       procedure Iterate_Keys is new Implementation.Iterate (Process => Keys);
@@ -43,11 +43,32 @@ package body Solid.CGI.Containers.Tables is
 
       begin -- Keys
          Iterate_Values (Container => Container.Handle, Position => Position);
-         Process (Name => -Implementation.Key (Position), Values => Value_Array);
+         Process (Name => -Implementation.Key (Position), Values => Value_Array, Continue => Continue);
       end Keys;
    begin -- Iterate
       Iterate_Keys (Container => Container.Handle);
    end Iterate;
+
+   procedure Iterate_Values (Container : in Table'Class; Name : in String) is
+      Position : constant Implementation.Cursor := Implementation.Find (Container => Container.Handle, Key => +Name);
+
+      procedure Iteration_Wrapper (Value : in Strings.U_String; Continue : in out Boolean);
+
+      procedure Iterate is new Implementation.Iterate_Values (Process => Iteration_Wrapper);
+
+      procedure Iteration_Wrapper (Value : in Strings.U_String; Continue : in out Boolean) is
+      begin -- Iteration_Wrapper
+         Process (Value => -Value, Continue => Continue);
+      end Iteration_Wrapper;
+
+      use type Implementation.Cursor;
+   begin -- Iterate_Values
+      if Position = Implementation.No_Element then
+         raise Table_Failure with "Iterate_Values: " & Name & " not found in container.";
+      end if;
+
+      Iterate (Container => Container.Handle, Position => Position);
+   end Iterate_Values;
 
    procedure Add (Container : in out Table; Name : in String; Value : in String) is
    begin -- Add

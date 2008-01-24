@@ -1,4 +1,6 @@
 with Ada.Calendar;
+with GNAT.String_Split;
+with Solid.CGI.Containers.Tables;
 with Solid.Strings;
 with Solid.Text_Streams;
 
@@ -171,6 +173,11 @@ package body Solid.CGI.Request is
    begin -- Headers
       return Object.Headers;
    end Headers;
+
+   function Cookies (Object : Data) return CGI.Cookies.List is
+   begin -- Cookies
+      return Object.Cookies;
+   end Cookies;
 
    function Parameters (Object : Data) return CGI.Parameters.List is
    begin -- Parameters

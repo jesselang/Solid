@@ -1,5 +1,8 @@
+with Ada.Exceptions;
 with Ada.Streams;
 with Ada.Text_IO.Text_Streams;
+with GNAT.String_Split;
+with Solid.CGI.Cookies;
 with Solid.CGI.Containers.Tables;
 with Solid.CGI.Environment;
 with Solid.CGI.Headers;
@@ -17,8 +20,10 @@ package body Solid.CGI.Standard is
       Invalid_Gateway : exception;
       Invalid_Post    : exception;
 
-      Input_Stream  : constant Ada.Text_IO.Text_Streams.Stream_Access := Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Input);
-      Output_Stream : constant Ada.Text_IO.Text_Streams.Stream_Access := Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Output);
+      Input_Stream  : constant Ada.Text_IO.Text_Streams.Stream_Access :=
+                                                                  Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Input);
+      Output_Stream : constant Ada.Text_IO.Text_Streams.Stream_Access :=
+                                                                  Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Output);
       Input  : Text_Streams.Text_Stream;
       Output : Text_Streams.Text_Stream;
 
@@ -70,11 +75,33 @@ package body Solid.CGI.Standard is
             else
                raise Invalid_Post with "unhandled content type: " & Request.Content_Type (Object) & '.';
             end if;
-            -- Read parameters from input stream, then parse.
-            null;
          end if;
+
+         Parse_Cookies : declare
+            Cookie_String        : constant String := CGI.Environment.Value (Environment.Current,
+                                                                             Name => CGI.Environment.HTTP_Cookie);
+
+            Cookie_Set : GNAT.String_Split.Slice_Set;
+            Name_Value : GNAT.String_Split.Slice_Set;
+            Cookies    : CGI.Cookies.List;
+
+            use GNAT.String_Split;
+         begin -- Parse_Cookies
+            Create (Cookie_Set,
+                    From       => CGI.Environment.Value (Environment.Current, Name => CGI.Environment.HTTP_Cookie),
+                    Separators => ";");
+
+            One_Cookie : for Index in 1 .. Slice_Count (Cookie_Set) loop
+               Create (Name_Value, From => Slice (Cookie_Set, Index), Separators => "=");
+
+               if Slice_Count (Name_Value) = 2 then
+                  Cookies.Add (Name => Slice (Name_Value, 1), Value => Slice (Name_Value, 2) );
+               end if;
+            end loop One_Cookie;
+
+            Request.Set.Cookies (Object => Object, Cookies => Cookies);
+         end Parse_Cookies;
          -- Parse headers.
-         -- Parse payload.
          Read_Payload : loop
             Ada.Streams.Read (Stream => Input_Stream.all, Item => Payload_Buffer, Last => Payload_Last);
 
@@ -90,7 +117,11 @@ package body Solid.CGI.Standard is
 
          use Text_Streams;
 
-         procedure Write_Header (Name : in String; Values : in String_Array) is
+         procedure Write_Header (Name : in String; Values : in String_Array; Continue : in out Boolean);
+
+         procedure Write_Headers is new Containers.Tables.Iterate (Process => Write_Header);
+
+         procedure Write_Header (Name : in String; Values : in String_Array; Continue : in out Boolean) is
          begin -- Write_Header
             Put (Stream => Output, Item => Name);
             Put (Stream => Output, Item => Name_Separator);
@@ -107,8 +138,6 @@ package body Solid.CGI.Standard is
          end Write_Header;
 
          Response_Headers : constant CGI.Headers.List := Response.Headers (Object);
-
-         procedure Write_Headers is new Containers.Tables.Iterate (Process => Write_Header);
       begin -- Write_Response
          Write_Headers (Containers.Tables.Table (Response.Headers (Object) ) );
          New_Line (Stream => Output);
@@ -126,5 +155,10 @@ package body Solid.CGI.Standard is
       when Invalid_Gateway =>
          Ada.Text_IO.Put_Line (File => Ada.Text_IO.Current_Error,
                                Item => "Error - it appears I'm not being called with a valid gateway interface.");
+      when O : others =>
+         Program_Response := Response.Build (Content_Type => "text/plain",
+                                             Message_Body => Ada.Exceptions.Exception_Name (O) & " - " &
+                                                             Ada.Exceptions.Exception_Message (O) );
+         Write_Response (Object => Program_Response);
    end Program;
 end Solid.CGI.Standard;

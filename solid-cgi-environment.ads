@@ -8,7 +8,7 @@ package Solid.CGI.Environment is
                      Document_Root,
                      Gateway_Interface,
                      HTTP_Accept,
-                     HTTP_Cookies,
+                     HTTP_Cookie,
                      HTTP_Host,
                      HTTP_User_Agent,
                      Path_Info,

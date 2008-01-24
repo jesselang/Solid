@@ -14,6 +14,11 @@ package body Solid.CGI.Request.Set is
       Object.Post_Query := +Post_Query;
    end Post_Query;
 
+   procedure Cookies (Object : in out Data; Cookies : in CGI.Cookies.List) is
+   begin -- Cookies
+      Object.Cookies := Cookies;
+   end Cookies;
+
    procedure Headers (Object : in out Data; Headers : in CGI.Headers.List) is
    begin -- Headers
       Object.Headers := Headers;

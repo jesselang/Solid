@@ -3,6 +3,7 @@ private with Solid.Strings;
 with Ada.Calendar;
 with Ada.Finalization;
 with Ada.Streams;
+with Solid.CGI.Cookies;
 with Solid.CGI.Environment;
 with Solid.CGI.Headers;
 with Solid.CGI.Parameters;
@@ -72,6 +73,8 @@ package Solid.CGI.Request is
 
    function Headers (Object : Data) return CGI.Headers.List;
 
+   function Cookies (Object : Data) return CGI.Cookies.List;
+
    function Parameters (Object : Data) return CGI.Parameters.List;
 
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
@@ -81,6 +84,7 @@ private -- Solid.CGI.Request
       Environment        : CGI.Environment.Handle;
       Post_Query         : Strings.U_String;
       Headers            : CGI.Headers.List;
+      Cookies            : CGI.Cookies.List;
       Parameters         : CGI.Parameters.List;
       Payload            : Strings.U_String;
    end record;

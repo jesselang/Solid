@@ -30,6 +30,8 @@ package Solid.Data_Structures.Hashed_Multimaps is
 
    function Exists (Container : Map; Key : Map_Key) return Boolean;
 
+   function Find (Container : Map; Key : Map_Key) return Cursor;
+
    function Get (Container : Map; Key : Map_Key; Position : Index := Index'First) return Element;
 
    procedure Append (Container : in out Map;
@@ -51,11 +53,12 @@ package Solid.Data_Structures.Hashed_Multimaps is
    generic -- Iterate
       with procedure Process (Position : in Cursor; Continue : in out Boolean);
    procedure Iterate (Container : in Map);
+   -- Raises Map_Failure if an error occurs.
 
    generic -- Iterate_Values
       with procedure Process (Value : in Element; Continue : in out Boolean);
-   procedure Iterate_Values (Container : in Map;
-                             Position  : in Cursor);
+   procedure Iterate_Values (Container : in Map; Position  : in Cursor);
+   -- Raises Map_Failure if Position = No_Element or if an error occurs.
 private -- Solid.Data_Structures.Hashed_Multimaps
    package Element_Implementation is new Ada.Containers.Vectors (Index_Type => Index, Element_Type => Element);
    package Map_Implementation is new Ada.Containers.Hashed_Maps (Key_Type        => Map_Key,

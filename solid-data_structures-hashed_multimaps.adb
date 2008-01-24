@@ -33,9 +33,23 @@ package body Solid.Data_Structures.Hashed_Multimaps is
       Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
 
       use type Map_Implementation.Cursor;
+      use type Ada.Containers.Count_Type;
    begin -- Exists
-      return Position = Map_Implementation.No_Element;
+      if Position = Map_Implementation.No_Element then
+         return False;
+      else
+         return Element_Implementation.Length (Container => Map_Implementation.Element (Position) ) /= 0;
+      end if;
+      --return Position /= Map_Implementation.No_Element;
    end Exists;
+
+   function Find (Container : Map; Key : Map_Key) return Cursor is
+      Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
+
+      use type Map_Implementation.Cursor;
+   begin -- Find
+      return Cursor'(Handle => Position);
+   end Find;
 
    function Get (Container : Map; Key : Map_Key; Position : Index := Index'First) return Element is
       Item_Position : constant Map_Implementation.Cursor := Map_Implementation.Find (Container.Handle, Key => Key);
@@ -126,16 +140,23 @@ package body Solid.Data_Structures.Hashed_Multimaps is
       Map_Implementation.Iterate (Container => Container.Handle, Process => Iteration_Wrapper'Access);
    end Iterate;
 
-   procedure Iterate_Values (Container : in Map;
-                             Position  : in Cursor)
+   procedure Iterate_Values (Container : in Map; Position : in Cursor)
    is
       Continue : Boolean := True;
 
       procedure Iteration_Wrapper (Position : in Element_Implementation.Cursor) is
       begin -- Iteration_Wrapper
+         if not Continue then
+            return;
+         end if;
+
          Process (Value => Element_Implementation.Element (Position), Continue => Continue);
       end Iteration_Wrapper;
    begin -- Iterate_Values
+      if Position = No_Element then
+         raise Map_Failure with "Iterate_Values: Position = No_Element";
+      end if;
+
       Element_Implementation.Iterate (Container => Map_Implementation.Element (Position  => Position.Handle),
                                       Process   => Iteration_Wrapper'Access);
    end Iterate_Values;
