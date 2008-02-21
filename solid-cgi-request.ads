@@ -95,5 +95,6 @@ private -- Solid.CGI.Request
 
    pragma Assert (Ada.Streams.Stream_Element'Size = 8);
 
-   overriding procedure Initialize (Object : in out Data);
+   overriding
+   procedure Initialize (Object : in out Data);
 end Solid.CGI.Request;

@@ -1,0 +1,9 @@
+with "../solid";
+
+project Session_Test is
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("session_test.adb");
+
+   package Builder renames Solid.Builder;
+end Session_Test;
