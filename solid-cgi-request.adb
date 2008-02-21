@@ -186,7 +186,7 @@ package body Solid.CGI.Request is
 
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array is
    begin -- Payload
-      return Text_Streams.To_Stream (-Object.Payload);
+      return Text_Streams.To_Stream (+Object.Payload);
    end Payload;
 
    overriding procedure Initialize (Object : in out Data) is

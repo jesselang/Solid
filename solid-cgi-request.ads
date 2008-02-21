@@ -7,6 +7,7 @@ with Solid.CGI.Cookies;
 with Solid.CGI.Environment;
 with Solid.CGI.Headers;
 with Solid.CGI.Parameters;
+with Solid.CGI.Session;
 
 package Solid.CGI.Request is
    No_Environment : exception;
@@ -78,6 +79,8 @@ package Solid.CGI.Request is
    function Parameters (Object : Data) return CGI.Parameters.List;
 
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
+
+--   function Session (Object : Data) return CGI.Session.Handle;
 private -- Solid.CGI.Request
    type Data is new Ada.Finalization.Controlled with record
       Created            : Ada.Calendar.Time;
@@ -87,6 +90,7 @@ private -- Solid.CGI.Request
       Cookies            : CGI.Cookies.List;
       Parameters         : CGI.Parameters.List;
       Payload            : Strings.U_String;
+      Session            : CGI.Session.Handle;
    end record;
 
    pragma Assert (Ada.Streams.Stream_Element'Size = 8);

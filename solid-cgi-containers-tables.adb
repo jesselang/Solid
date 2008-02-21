@@ -15,7 +15,7 @@ package body Solid.CGI.Containers.Tables is
    function Get (Container : Table; Name : String; Position : Index := Index'First) return String is
       Value_Index : constant Implementation.Index := Implementation.Index (Position);
    begin -- Get
-      return -Implementation.Get (Container.Handle, Key => +Name, Position => Value_Index);
+      return +Implementation.Get (Container.Handle, Key => +Name, Position => Value_Index);
    exception -- Get
       when Data_Structures.Map_Failure =>
          return "";
@@ -43,7 +43,7 @@ package body Solid.CGI.Containers.Tables is
 
       begin -- Keys
          Iterate_Values (Container => Container.Handle, Position => Position);
-         Process (Name => -Implementation.Key (Position), Values => Value_Array, Continue => Continue);
+         Process (Name => +Implementation.Key (Position), Values => Value_Array, Continue => Continue);
       end Keys;
    begin -- Iterate
       Iterate_Keys (Container => Container.Handle);
@@ -58,7 +58,7 @@ package body Solid.CGI.Containers.Tables is
 
       procedure Iteration_Wrapper (Value : in Strings.U_String; Continue : in out Boolean) is
       begin -- Iteration_Wrapper
-         Process (Value => -Value, Continue => Continue);
+         Process (Value => +Value, Continue => Continue);
       end Iteration_Wrapper;
 
       use type Implementation.Cursor;

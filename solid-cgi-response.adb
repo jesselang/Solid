@@ -25,7 +25,7 @@ package body Solid.CGI.Response is
 
       Result := Result & Text_Streams.To_String (Request.Payload (Client) );
 
-      return Build (Content_Type => "text/plain", Message_Body => -Result);
+      return Build (Content_Type => "text/plain", Message_Body => +Result);
    end Test;
 
    function Build (Content_Type : String;
@@ -54,6 +54,6 @@ package body Solid.CGI.Response is
 
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array is
    begin -- Payload
-      return Text_Streams.To_Stream (-Object.Payload);
+      return Text_Streams.To_Stream (+Object.Payload);
    end Payload;
 end Solid.CGI.Response;

@@ -27,20 +27,14 @@ procedure CGI_Test is
       if Cookies.Exists (Name => "Solid") then
          return Response.Build ("text/plain", Message_Body => "The cookie has been set with the value """ &
                                                               Cookies.Get (Name => "Solid") & """");
-         --~ return Response.Build ("text/plain", Message_Body => "Cookies """ & Solid.CGI.Environment.Value
-                                                                             --~ (Object => Solid.CGI.Standard.Environment.Current,
-                                                                              --~ Name   => Solid.CGI.Environment.HTTP_Cookie)
-                                                              --~ & """");
       else
 
-         Solid.CGI.Cookies.Set (Headers => Headers,
-                                Name    => "Solid",
-                                Value   => "Jesse");
+         Solid.CGI.Cookies.Set (Headers => Headers, Name => "Solid", Value => "Jesse");
 
          return Response.Build ("text/plain", Message_Body => "Set a cookie " & Solid.CGI.Environment.Value
-                                                                             (Object => Solid.CGI.Standard.Environment.Current,
-                                                                              Name   => Solid.CGI.Environment.HTTP_Cookie)
-                                                                              , Headers => Headers);
+                                                                             (Object  => Solid.CGI.Standard.Environment.Current,
+                                                                              Name    => Solid.CGI.Environment.HTTP_Cookie),
+                                                                              Headers => Headers);
       end if;
    end Cookie_Test;
 

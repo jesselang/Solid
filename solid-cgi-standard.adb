@@ -127,7 +127,7 @@ package body Solid.CGI.Standard is
             Put (Stream => Output, Item => Name_Separator);
 
             for Index in Values'Range loop
-               Put (Stream => Output, Item => -Values (Index) );
+               Put (Stream => Output, Item => +Values (Index) );
 
                exit when Index = Values'Last;
 

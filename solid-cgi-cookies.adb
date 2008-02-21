@@ -37,7 +37,7 @@ package body Solid.CGI.Cookies is
          Cookie_Value := Cookie_Value & "; domain=" & Domain;
       end if;
 
-      Headers.Add (Name => "Set-Cookie", Value => -Cookie_Value);
+      Headers.Add (Name => "Set-Cookie", Value => +Cookie_Value);
    end Set;
 
    function Date_Image (Date : Ada.Calendar.Time) return String is

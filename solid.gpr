@@ -16,6 +16,7 @@ project Solid is
        "solid-cgi-request.adb",
        "solid-cgi-request-set.adb",
        "solid-cgi-response.adb",
+       "solid-cgi-session.ads",
        "solid-cgi-standard.adb",
        "solid-cgi-standard-environment.adb",
        "solid-cgi-url.adb",
@@ -25,6 +26,8 @@ project Solid is
        "solid-debug-analyzer.adb",
        "solid-net.ads",
 --       "solid-net-iax.ads",
+       "solid-platform.ads",
+       "solid-platform-endian.adb",
        "solid-strings.ads",
        "solid-text_streams.adb");
    package Builder is
