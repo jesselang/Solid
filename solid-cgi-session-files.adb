@@ -1,6 +1,9 @@
 with Ada.Directories;
-with Solid.CGI.Session.Files.Index;
-with Solid.CGI.Session.Files.Storage;
+with Ada.Streams.Stream_IO;
+with Ada.Text_IO;
+with GNAT.Lock_Files;
+--~ with Solid.CGI.Session.Files.Index;
+--~ with Solid.CGI.Session.Files.Storage;
 with Solid.Strings;
 use Solid.Strings;
 
@@ -19,99 +22,89 @@ package body Solid.CGI.Session.Files is
       Settings.Path := +To;
    end Set_Path;
 
-   procedure Initialize_Implementation (Settings : in out Context) is
-   begin -- Initialize_Implementation
-      Ada.Directories.Create_Path (New_Directory => +Settings.Path);
-   exception -- Initialize_Implementation
-      when Ada.Directories.Name_Error | Ada.Directories.Use_Error =>
-         raise Invalid_Context with "could not create path.";
-   end Initialize_Implementation;
-
    function Path (Settings : Context'Class) return String is
    begin -- Path
       return +Settings.Path;
    end Path;
 
-   function New_Session (Settings : Context) return Session.Data'Class is
-      Result : Session.Data'Class := Data'(Session.Data with null record);
-   begin -- New_Session
-      return Result;
-   end New_Session;
+   procedure Initialize (Settings : in out Context) is
+   begin -- Initialize
+      Ada.Directories.Create_Path (New_Directory => +Settings.Path);
+   exception -- Initialize
+      when Ada.Directories.Name_Error | Ada.Directories.Use_Error =>
+         raise Invalid_Context with "could not create path.";
+   end Initialize;
 
-   procedure Create_Implementation (Session : in out Data) is
-      Settings : Local_Context := Local_Context (Session.Settings);
-   begin -- Create_Implementation
-      if not Valid (Session.Settings.all) then
-         raise Invalid_Context;
-      end if;
+   function Data_File (Settings : Context; Identity : String) return String;
+   -- Returns the data file name for Session.
 
-      Unique_Identity : loop
-         exit Unique_Identity when not Index.Exists (Session);
+   function Lock_File (Settings : Context; Identity : String) return String;
+   -- Returns the lock file name for Session.
 
-         Session.New_Identity;
-      end loop Unique_Identity;
+   function Exists (Settings : Context; Session : Data'Class) return Boolean is
+   begin -- Exists
+      return Ada.Directories.Exists (Data_File (Settings, Identity => Session.Identity) );
+   end Exists;
 
-      Index.Add (Session => Session);
-   end Create_Implementation;
+   procedure Create (Settings : in out Context; Session : in out Data'Class) is
+      File   : Ada.Streams.Stream_IO.File_Type;
+      Stream : Ada.Streams.Stream_IO.Stream_Access;
 
-   procedure Delete_Implementation (Session : in out Data) is
-      Settings : Local_Context := Local_Context (Session.Settings);
-   begin -- Delete_Implementation
-      if not Valid (Session.Settings.all) then
-         raise Invalid_Context;
-      end if;
+      use Ada.Streams;
+   begin -- Create
+      -- If the session file exists, generate a new identity.
+      -- Write the session that we have, which is an empty one.
+      GNAT.Lock_Files.Lock_File (Lock_File_Name => Lock_File (Settings, Identity => Session.Identity), Wait => 0.3);
+      Stream_IO.Create (File => File, Name => Data_File (Settings, Identity => Session.Identity) );
+      Stream := Stream_IO.Stream (File);
+      Output (Stream => Stream, Item => Session);
+      Stream_IO.Close (File => File);
+   end Create;
 
-      if not Index.Exists (Session) then
-         raise Not_Found;
-      end if;
+   procedure Delete (Settings : in out Context; Session : in out Data'Class) is
+   begin -- Delete
+      Ada.Directories.Delete_File (Name => Data_File (Settings, Identity => Session.Identity) );
+      GNAT.Lock_Files.Unlock_File (Lock_File_Name => Lock_File (Settings, Identity => Session.Identity) );
+      -- Set Session to some uninitialized value in the parent package?
+   end Delete;
 
-      Index.Delete (Session => Session);
-      Storage.Delete (Session => Session);
-   end Delete_Implementation;
+   procedure Read (Settings : in out Context; Identity : in String; Session : out Data'Class) is
+      File   : Ada.Streams.Stream_IO.File_Type;
+      Stream : Ada.Streams.Stream_IO.Stream_Access;
 
-   procedure Read_Implementation (From : in out Context; Identity : in String; To : out Session.Data'Class) is
-   begin -- Read_Implementation
-      if not Valid (From) then
-         raise Invalid_Context;
-      end if;
+      use Ada.Streams;
+   begin -- Read
+      GNAT.Lock_Files.Lock_File (Lock_File_Name => Lock_File (Settings, Identity => Identity), Wait => 0.3);
+      Stream_IO.Open (File => File, Mode => Stream_IO.In_File, Name => Data_File (Settings, Identity => Identity) );
+      Stream := Stream_IO.Stream (File);
+      Input (Stream, Session);
+      Stream_IO.Close (File => File);
+   end Read;
 
-      --~ if not Exists_In_Index (Session) then
-         --~ raise Not_Found;
-      --~ end if;
+   procedure Write (Settings : in out Context; Session : in out Data'Class) is
+      File   : Ada.Streams.Stream_IO.File_Type;
+      Stream : Ada.Streams.Stream_IO.Stream_Access;
 
+      use Ada.Streams;
+   begin -- Write
+      Stream_IO.Open (File => File, Mode => Stream_IO.Out_File, Name => Data_File (Settings, Identity => Session.Identity) );
+      Stream := Stream_IO.Stream (File);
+      Output (Stream => Stream, Item => Session);
+      Stream_IO.Close (File => File);
+   end Write;
 
-      -- If session not in index then raise Not_Found.
-      -- If session is in use, raise In_Use.
-      -- If data file isn't readable, then delete from index, and raise Not_Found.
-      -- Read data file.
-   end Read_Implementation;
+   procedure Close (Settings : in out Context; Session : in out Data'Class) is
+   begin -- Close
+      GNAT.Lock_Files.Unlock_File (Lock_File_Name => Lock_File (Settings, Identity => Session.Identity) );
+   end Close;
 
-   procedure Write_Implementation (Session : in out Data) is
-   begin -- Write_Implementation
-      if not Valid (Session.Settings.all) then
-         raise Invalid_Context;
-      end if;
+   function Data_File (Settings : Context; Identity : String) return String is
+   begin -- Data_File
+      return +Settings.Path & '/' & Identity;
+   end Data_File;
 
-      if not Index.Exists (Session) then
-         raise Not_Found;
-      end if;
-
-      Storage.Write (Session);
-
-      -- If session is not in the index, raise Not_Found.
-      -- Check in use?
-      -- Write data file.
-      --~ Release_Lock (Session => Session);
-   end Write_Implementation;
-
-
-   function "<" (Left : Index_Entry; Right : Index_Entry) return Boolean is
-   begin -- "<"
-      return Left.Identity < Right.Identity;
-   end "<";
-
-   function "=" (Left : Index_Entry; Right : Index_Entry) return Boolean is
-   begin -- "="
-      return Left.Identity = Right.Identity;
-   end "=";
+   function Lock_File (Settings : Context; Identity : String) return String is
+   begin -- Lock_File
+      return Data_File (Settings, Identity) & ".lock";
+   end Lock_File;
 end Solid.CGI.Session.Files;

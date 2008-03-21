@@ -1,7 +1,7 @@
 -- Store session data in a file system.  Intended for standard CGI use.
 private with Ada.Calendar;
-private with Ada.Containers.Ordered_Sets;
-private with Ada.Sequential_IO;
+--~ private with Ada.Containers.Ordered_Sets;
+--~ private with Ada.Sequential_IO;
 private with Solid.Calendar;
 
 package Solid.CGI.Session.Files is
@@ -11,51 +11,35 @@ package Solid.CGI.Session.Files is
 
    procedure Set_Path (Settings : in out Context'Class; To : in String);
 
-   overriding
-   procedure Initialize_Implementation (Settings : in out Context);
-
    function Path (Settings : Context'Class) return String;
-
-   type Data is new Session.Data with private;
-
-   overriding
-   function New_Session (Settings : Context) return Session.Data'Class;
-
-   overriding
-   procedure Create_Implementation (Session : in out Data);
-
-   overriding
-   procedure Delete_Implementation (Session : in out Data);
-
-   overriding
-   procedure Read_Implementation (From : in out Context; Identity : in String; To : out Session.Data'Class);
-   -- Reads Session from storage.
-   -- Raises Not_Found if Session was not found in storage.
-
-   overriding
-   procedure Write_Implementation (Session : in out Data);
-
 private -- Solid.CGI.Session.Files
-   type Index_Entry is record
-      Identity : Session_Identity  := No_Identity;
-      Expires  : Ada.Calendar.Time := Calendar.No_Time;
-      In_Use   : Boolean           := False;
-   end record;
-
-   package Index_IO is new Ada.Sequential_IO (Index_Entry);
-
-   function "<" (Left : Index_Entry; Right : Index_Entry) return Boolean;
-   function "=" (Left : Index_Entry; Right : Index_Entry) return Boolean;
-
-   package Index_Sets is new Ada.Containers.Ordered_Sets (Element_Type => Index_Entry);
-
    type Context is new Session.Context with record
       Path      : Strings.U_String;
-      Index     : Index_IO.File_Type;
-      Index_Set : Index_Sets.Set;
    end record;
 
-   type Local_Context is access all Context;
+   overriding
+   procedure Initialize (Settings : in out Context);
 
-   type Data is new Session.Data with null record;
+   overriding
+   procedure Finalize (Settings : in out Context) is null;
+
+   overriding
+   function Exists (Settings : Context; Session : Data'Class) return Boolean;
+
+   overriding
+   procedure Create (Settings : in out Context; Session : in out Data'Class);
+
+   overriding
+   procedure Delete (Settings : in out Context; Session : in out Data'Class);
+
+   overriding
+   procedure Read (Settings : in out Context; Identity : in String; Session : out Data'Class);
+
+   overriding
+   procedure Write (Settings : in out Context; Session : in out Data'Class);
+
+   overriding
+   procedure Close (Settings : in out Context; Session : in out Data'Class);
+
+   type Local_Context is access all Context;
 end Solid.CGI.Session.Files;

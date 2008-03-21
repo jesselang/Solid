@@ -3,11 +3,11 @@ generic -- Solid.CGI.Session.Generic_Tuples
 package Solid.CGI.Session.Generic_Tuples is
    Invalid_Value : exception;
 
-   function Get (Session : Data'Class; Key : String) return Tuple_Value;
+   function Get (Session : Data; Key : String) return Tuple_Value;
    -- Raises Not_Found if not Exists (Session
    -- Raises Invalid_Value if the value stored is not a Tuple_Value.
 
-   procedure Set (Session : in out Data'Class; Key : in String; Value : in Tuple_Value);
+   procedure Set (Session : in out Data; Key : in String; Value : in Tuple_Value);
 private -- Solid.CGI.Session.Generic_Tuples
    type Valued_Tuple is new Tuple with record
       Value : Tuple_Value;
