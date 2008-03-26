@@ -1,5 +1,4 @@
 with Ada.Calendar.Formatting;
-with Ada.Calendar.Time_Zones;
 with PragmARC.Date_Handler;
 with PragmARC.Mixed_Case;
 with Solid.Strings;
@@ -9,6 +8,7 @@ package body Solid.CGI.Cookies is
    function Date_Image (Date : Ada.Calendar.Time) return String;
    -- Returns date image in the format acceptable for cookies.
 
+   -- Set-Cookie: RMID=732423sdfs73242; expires=Fri, 31-Dec-2010 23:59:59 GMT; path=/; domain=.example.net
    procedure Set (Headers : in out CGI.Headers.List;
                   Name    : in     String;
                   Value   : in     String;

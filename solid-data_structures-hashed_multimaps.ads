@@ -1,5 +1,5 @@
+-- Generic implementation of a hashed multimap.
 with Ada.Containers;
-
 private with Ada.Containers.Hashed_Maps;
 private with Ada.Containers.Vectors;
 

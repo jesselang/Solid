@@ -1,3 +1,5 @@
+-- Provides a binary display of Data.
+-- Helpful when creating bindings or interfaces.
 generic -- Solid.Debug.Analyzer
    type Data is private;
 package Solid.Debug.Analyzer is

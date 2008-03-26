@@ -1,6 +1,7 @@
-package Solid.CGI.MIME is
-   -- Shamelessly copied from AWS.MIME.
+-- Shamelessly copied from AWS.MIME.
+-- Not sure if this is going to stay here.
 
+package Solid.CGI.MIME is
    ----------
    -- Text --
    ----------

@@ -1,3 +1,4 @@
+-- Type and operations that represent a HTTP response.
 private with Solid.Strings;
 with Ada.Streams;
 with Solid.CGI.Headers;

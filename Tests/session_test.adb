@@ -6,7 +6,7 @@ use Solid.Strings;
 
 procedure Session_Test is
    Identity : constant String := "04f7d52d43e1d5d3e5073041111bd294";
-   Context : Solid.CGI.Session.Context_Handle := Solid.CGI.Session.Files.Initialize (Path => "/tmp/solid-sessions");
+   Context : Solid.CGI.Session.Storage.Context_Handle := Solid.CGI.Session.Files.Initialize (Path => "/tmp/solid-sessions");
    --~ Session : Solid.CGI.Session.Data := Solid.CGI.Session.Create (Context);
    Session : Solid.CGI.Session.Data := Solid.CGI.Session.Read (Context, Identity => Identity);
 begin -- Session_Test

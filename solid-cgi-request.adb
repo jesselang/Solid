@@ -189,6 +189,11 @@ package body Solid.CGI.Request is
       return Text_Streams.To_Stream (+Object.Payload);
    end Payload;
 
+   --~ function Session (Object : Data) return CGI.Session.Data is
+   --~ begin -- Session
+
+   --~ end Session;
+
    procedure Initialize (Object : in out Data) is
    begin -- Initialize
       Object.Created := Ada.Calendar.Clock;

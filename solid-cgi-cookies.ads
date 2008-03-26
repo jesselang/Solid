@@ -1,5 +1,4 @@
--- Set-Cookie: RMID=732423sdfs73242; expires=Fri, 31-Dec-2010 23:59:59 GMT; path=/; domain=.example.net
-private with Solid.Strings;
+-- ADT and operation for HTTP cookies.
 with Ada.Calendar;
 with Solid.Calendar;
 with Solid.CGI.Containers.Tables;
@@ -7,6 +6,7 @@ with Solid.CGI.Headers;
 
 package Solid.CGI.Cookies is
    type List is new Solid.CGI.Containers.Tables.Table with null record;
+   -- See Solid.CGI.Containers.Tables for inherited operations.
 
    procedure Set (Headers : in out CGI.Headers.List;
                   Name    : in     String;

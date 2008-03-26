@@ -17,8 +17,8 @@ use Solid.Strings;
 
 package body Solid.CGI.Standard is
    procedure Program is
-      Invalid_Gateway : exception;
       Invalid_Post    : exception;
+      -- Raised if a post request sanity check fails.
 
       Input_Stream  : constant Ada.Text_IO.Text_Streams.Stream_Access :=
                                                                   Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Input);
@@ -51,12 +51,13 @@ package body Solid.CGI.Standard is
          use Text_Streams;
       begin -- Read_Request
          if CGI.Environment.Value (Environment.Current, Name => CGI.Environment.Gateway_Interface) /= "CGI/1.1" then
-            raise Invalid_Gateway;
+            raise Invalid_Gateway with "gateway sanity check failed.";
          end if;
 
          Request.Set.Environment (Object => Object, Environment => Environment.Current);
 
          if Request.Method (Object) = Request.Get then
+            -- Parameters could be parsed and set upon request.
             Request.Set.Parameters (Object     => Object,
                                     Parameters => CGI.Parameters.Parse_URL_Encoding (Request.Query (Object => Object) ) );
          else
@@ -68,7 +69,9 @@ package body Solid.CGI.Standard is
                      raise Invalid_Post with "content length validation failed.";
                   end if;
 
+                  -- Is post query needed?
                   Request.Set.Post_Query (Object => Object, Post_Query => Post_Query (1 .. Post_Query_Last) );
+                  -- Parameters could be parsed and set upon request.
                   Request.Set.Parameters (Object     => Object,
                                           Parameters => CGI.Parameters.Parse_URL_Encoding (Post_Query (1 .. Post_Query_Last) ) );
                end if;
@@ -77,6 +80,7 @@ package body Solid.CGI.Standard is
             end if;
          end if;
 
+         -- It would be nice to parse cookies upon request.
          Parse_Cookies : declare
             Cookie_String        : constant String := CGI.Environment.Value (Environment.Current,
                                                                              Name => CGI.Environment.HTTP_Cookie);
@@ -153,8 +157,9 @@ package body Solid.CGI.Standard is
       Write_Response (Object => Program_Response);
    exception -- Program
       when Invalid_Gateway =>
-         Ada.Text_IO.Put_Line (File => Ada.Text_IO.Current_Error,
-                               Item => "Error - it appears I'm not being called with a valid gateway interface.");
+         raise;
+      when Text_Streams.End_Of_Stream =>
+         raise Invalid_Gateway with "I/O stream ended unexpectedly.";
       when O : others =>
          Program_Response := Response.Build (Content_Type => "text/plain",
                                              Message_Body => Ada.Exceptions.Exception_Name (O) & " - " &

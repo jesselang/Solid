@@ -1,3 +1,5 @@
+-- Abstract representation of the CGI environment.  See Solid.CGI.Standard.Environment for an implementation.
+
 package Solid.CGI.Environment is
    type Data is abstract tagged null record;
    type Handle is access Data'Class;

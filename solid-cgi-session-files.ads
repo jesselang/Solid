@@ -1,19 +1,19 @@
--- Store session data in a file system.  Intended for standard CGI use.
+-- A basic storage method suitable for "standard" low-volume CGI applications.
+-- Stores session data in the file system.  Intended for standard CGI use.
 private with Ada.Calendar;
---~ private with Ada.Containers.Ordered_Sets;
---~ private with Ada.Sequential_IO;
 private with Solid.Calendar;
 
 package Solid.CGI.Session.Files is
-   type Context is new Session.Context with private;
+   type Context is new Storage.Context with private;
 
-   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last) return Context_Handle;
+   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last)
+   return Storage.Context_Handle;
 
    procedure Set_Path (Settings : in out Context'Class; To : in String);
 
    function Path (Settings : Context'Class) return String;
 private -- Solid.CGI.Session.Files
-   type Context is new Session.Context with record
+   type Context is new Storage.Context with record
       Path      : Strings.U_String;
    end record;
 
@@ -24,22 +24,20 @@ private -- Solid.CGI.Session.Files
    procedure Finalize (Settings : in out Context) is null;
 
    overriding
-   function Exists (Settings : Context; Session : Data'Class) return Boolean;
+   function Exists (Settings : Context; Session : Data) return Boolean;
 
    overriding
-   procedure Create (Settings : in out Context; Session : in out Data'Class);
+   procedure Create (Settings : in out Context; Session : in out Data);
 
    overriding
-   procedure Delete (Settings : in out Context; Session : in out Data'Class);
+   procedure Delete (Settings : in out Context; Session : in out Data);
 
    overriding
-   procedure Read (Settings : in out Context; Identity : in String; Session : out Data'Class);
+   procedure Read (Settings : in out Context; Identity : in String; Session : out Data);
 
    overriding
-   procedure Write (Settings : in out Context; Session : in out Data'Class);
+   procedure Write (Settings : in out Context; Session : in out Data);
 
    overriding
-   procedure Close (Settings : in out Context; Session : in out Data'Class);
-
-   type Local_Context is access all Context;
+   procedure Close (Settings : in out Context; Session : in out Data);
 end Solid.CGI.Session.Files;

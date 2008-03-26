@@ -33,4 +33,9 @@ package body Solid.CGI.Request.Set is
    begin -- Payload
       Object.Payload := Object.Payload & (+Text_Streams.To_String (Payload) );
    end Append_Payload;
+
+   procedure Session_Context (Object : in out Data; Settings : CGI.Session.Storage.Context_Handle) is
+   begin -- Session_Context
+      Object.Session_Context := Settings;
+   end Session_Context;
 end Solid.CGI.Request.Set;

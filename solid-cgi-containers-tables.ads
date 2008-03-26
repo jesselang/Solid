@@ -1,5 +1,7 @@
-private with Solid.Data_Structures.Hashed_Multimaps;
+-- Implementation of a multi-value table.  Used in the CGI portion of this library for data sets like headers,
+-- cookies, and parameters.  This instantiation is used as a base for those packages.
 
+private with Solid.Data_Structures.Hashed_Multimaps;
 with Ada.Strings.Unbounded.Hash;
 with Solid.Strings;
 

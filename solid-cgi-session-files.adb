@@ -8,11 +8,12 @@ with Solid.Strings;
 use Solid.Strings;
 
 package body Solid.CGI.Session.Files is
-   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last) return Context_Handle is
-      Result : Context_Handle := new Context;
+   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last)
+   return Storage.Context_Handle is
+      Result : Storage.Context_Handle := new Context;
    begin -- Initialize
       Set_Path (Settings => Context (Result.all), To => Path);
-      Initialize (Settings => Result, Name => Name, Lifetime => Lifetime);
+      Storage.Initialize (Settings => Result, Name => Name, Lifetime => Lifetime);
 
       return Result;
    end Initialize;
@@ -32,7 +33,7 @@ package body Solid.CGI.Session.Files is
       Ada.Directories.Create_Path (New_Directory => +Settings.Path);
    exception -- Initialize
       when Ada.Directories.Name_Error | Ada.Directories.Use_Error =>
-         raise Invalid_Context with "could not create path.";
+         raise Storage.Invalid_Context with "could not create path.";
    end Initialize;
 
    function Data_File (Settings : Context; Identity : String) return String;
@@ -41,12 +42,12 @@ package body Solid.CGI.Session.Files is
    function Lock_File (Settings : Context; Identity : String) return String;
    -- Returns the lock file name for Session.
 
-   function Exists (Settings : Context; Session : Data'Class) return Boolean is
+   function Exists (Settings : Context; Session : Data) return Boolean is
    begin -- Exists
       return Ada.Directories.Exists (Data_File (Settings, Identity => Session.Identity) );
    end Exists;
 
-   procedure Create (Settings : in out Context; Session : in out Data'Class) is
+   procedure Create (Settings : in out Context; Session : in out Data) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;
 
@@ -61,14 +62,14 @@ package body Solid.CGI.Session.Files is
       Stream_IO.Close (File => File);
    end Create;
 
-   procedure Delete (Settings : in out Context; Session : in out Data'Class) is
+   procedure Delete (Settings : in out Context; Session : in out Data) is
    begin -- Delete
       Ada.Directories.Delete_File (Name => Data_File (Settings, Identity => Session.Identity) );
       GNAT.Lock_Files.Unlock_File (Lock_File_Name => Lock_File (Settings, Identity => Session.Identity) );
       -- Set Session to some uninitialized value in the parent package?
    end Delete;
 
-   procedure Read (Settings : in out Context; Identity : in String; Session : out Data'Class) is
+   procedure Read (Settings : in out Context; Identity : in String; Session : out Data) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;
 
@@ -79,9 +80,13 @@ package body Solid.CGI.Session.Files is
       Stream := Stream_IO.Stream (File);
       Input (Stream, Session);
       Stream_IO.Close (File => File);
+   exception -- Read
+      when Stream_IO.Name_Error | Stream_IO.Use_Error =>
+         GNAT.Lock_Files.Unlock_File (Lock_File_Name => Lock_File (Settings, Identity => Identity) );
+         raise Not_Found;
    end Read;
 
-   procedure Write (Settings : in out Context; Session : in out Data'Class) is
+   procedure Write (Settings : in out Context; Session : in out Data) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;
 
@@ -93,7 +98,7 @@ package body Solid.CGI.Session.Files is
       Stream_IO.Close (File => File);
    end Write;
 
-   procedure Close (Settings : in out Context; Session : in out Data'Class) is
+   procedure Close (Settings : in out Context; Session : in out Data) is
    begin -- Close
       GNAT.Lock_Files.Unlock_File (Lock_File_Name => Lock_File (Settings, Identity => Session.Identity) );
    end Close;

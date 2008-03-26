@@ -1,7 +1,9 @@
+-- ADT and operations for HTTP query parameters.
 with Solid.CGI.Containers.Tables;
 
 package Solid.CGI.Parameters is
    type List is new Containers.Tables.Table with null record;
+   -- See Solid.CGI.Containers.Tables for inherited operations.
 
    Parse_Error : exception;
 
