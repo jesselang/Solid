@@ -14,7 +14,6 @@ package Solid.CGI.Request is
 
    type Data is private;
 
-
    -- Request environment information.
    -- The following environment related functions may raise No_Environment if no environment is available for the request.
    type Request_Method is (Get, Post);

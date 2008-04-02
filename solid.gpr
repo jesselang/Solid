@@ -4,6 +4,9 @@ project Solid is
    for Object_Dir use "obj";
    for Source_Files use
       ("solid.ads",
+       "solid-audio.ads",
+       "solid-audio-jack.adb",
+       "solid-audio-jack-thin.ads",
        "solid-calendar.ads",
        "solid-cgi.ads",
        "solid-cgi-containers.ads",

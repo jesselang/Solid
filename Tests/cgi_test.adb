@@ -23,7 +23,7 @@ procedure CGI_Test is
       Headers : Solid.CGI.Headers.List;
       Cookies : Solid.CGI.Cookies.List;
    begin -- Cookie_Test
-      Cookies := Client.Cookies;
+      Cookies := Request.Cookies (Client);
       if Cookies.Exists (Name => "Solid") then
          return Response.Build ("text/plain", Message_Body => "The cookie has been set with the value """ &
                                                               Cookies.Get (Name => "Solid") & """");
