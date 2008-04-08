@@ -39,9 +39,12 @@ project Solid is
        "solid-platform-endian.adb",
        "solid-strings.ads",
        "solid-text_streams.adb");
+   package Compiler is
+      for Default_Switches ("Ada") use ("-fstack-check");
+      -- for Switches ("solid-audio-jack.adb") use ("");
+      for Switches ("solid-cgi-request.adb") use ("-fstack-check", "-gnata");
+   end Compiler;
    package Builder is
-      for Default_Switches ("Ada")
-         use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1", "-j2", "-gnata");
-      -- Option "-gnata" is required for Assert pragmas to be verified.
+      for Default_Switches ("Ada") use ("-m", "-gnato", "-gnat05", "-O1", "-j2");
    end Builder;
 end Solid;
