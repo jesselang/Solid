@@ -1,0 +1,17 @@
+with "../solid";
+
+project Jack_Client is
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("jack_client.adb");
+
+   package Builder renames Solid.Builder;
+   package Compiler renames Solid.Compiler;
+   --package Builder is
+   --   for Default_Switches ("Ada") use ("-m", "-gnato", "-fstack-check", "-gnat05", "-O1", "-j2");
+   --end Builder;
+
+   package Binder is
+      for Default_Switches ("Ada") use ("-d50m", "-D50m");
+   end Binder;
+end Jack_Client;
