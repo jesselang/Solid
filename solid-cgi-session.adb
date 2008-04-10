@@ -203,7 +203,7 @@ package body Solid.CGI.Session is
          raise Invalid_Context;
       end if;
 
-      Safe_Create (Session.Settings.all);
+      Safe_Create (Settings.all);
    end Create;
 
    function Create (Settings : not null Storage.Context_Handle) return Data is
