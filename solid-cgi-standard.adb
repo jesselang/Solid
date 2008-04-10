@@ -113,6 +113,8 @@ package body Solid.CGI.Standard is
 
             Request.Set.Append_Payload (Object => Object, Payload => Payload_Buffer (1 .. Payload_Last) );
          end loop Read_Payload;
+
+         Request.Set.Session_Context (Object, Settings => Session_Context);
       end Read_Request;
 
       procedure Write_Response (Object : in Response.Data) is

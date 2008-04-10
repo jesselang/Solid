@@ -7,46 +7,58 @@ with Solid.Strings;
 use Solid.Strings;
 
 package body Solid.CGI.Session is
+   function Valid (Session : Data) return Boolean is
+      use type Storage.Context_Handle;
+   begin -- Valid
+      return Session.Settings /= Storage.No_Context;
+   end Valid;
+
    procedure Initialize (Session : in out Data; Settings : in not null Storage.Context_Handle);
 
    procedure Delete (Session : in out Data) is
+      procedure Process is
+      begin -- Process
+         Storage.Delete (Settings => Session.Settings.all, Session => Session);
+      end Process;
+
+      procedure Safe_Delete is new Storage.Safe_Process (Process => Process);
+
       use type Storage.Context_Handle;
    begin -- Delete
-      if Session.Settings = null or else not Storage.Valid (Session.Settings.all) then
-         raise Storage.Invalid_Context;
+      if Session.Settings = Storage.No_Context or else not Storage.Valid (Session.Settings.all) then
+         raise Invalid_Context;
       end if;
 
-      --~ Locked : declare
-         --~ Lock : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (Session.Settings.Lock'Access);
-      --~ begin -- Locked
-         Storage.Delete (Settings => Session.Settings.all, Session => Session);
-      --~ end Locked;
+      Safe_Delete (Session.Settings.all);
    end Delete;
 
    procedure Write (Session : in out Data) is
+      procedure Process is
+      begin -- Process
+         Storage.Write (Settings => Session.Settings.all, Session => Session);
+         Session.Modified := False;
+      end Process;
+
+      procedure Safe_Write is new Storage.Safe_Process (Process => Process);
+
       use type Storage.Context_Handle;
    begin -- Write
       if not Session.Modified then
          return;
       end if;
 
-      if Session.Settings = null or else not Storage.Valid (Session.Settings.all) then
-         raise Storage.Invalid_Context;
+      if Session.Settings = Storage.No_Context or else not Storage.Valid (Session.Settings.all) then
+         raise Invalid_Context;
       end if;
 
-      --~ Locked : declare
-         --~ Lock : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (Session.Settings.Lock'Access);
-      --~ begin -- Locked
-         Storage.Write (Settings => Session.Settings.all, Session => Session);
-         Session.Modified := False;
-      --~ end Locked;
+      Safe_Write (Session.Settings.all);
    end Write;
 
    function Name (Session : Data) return String is
       use type Storage.Context_Handle;
    begin -- Name
-      if Session.Settings = null then
-         raise Storage.Invalid_Context;
+      if Session.Settings = Storage.No_Context then
+         raise Invalid_Context;
       end if;
 
       return Storage.Name (Session.Settings.all);
@@ -128,19 +140,21 @@ package body Solid.CGI.Session is
 
    package body Storage is
       procedure Initialize (Settings : in out Context_Handle; Name : String := "Session"; Lifetime : Duration := Duration'Last) is
-      begin -- Initialize
-         if Settings = null then
-            raise Storage.Invalid_Context;
-         end if;
-
-         Locked : declare
-            Lock : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (Settings.Lock'Access);
-         begin -- Locked
+         procedure Process is
+         begin -- Process
             Settings.Name := +Name;
             Settings.Lifetime := Lifetime;
             Settings.Initialize;
             Settings.Valid := True;
-         end Locked;
+         end Process;
+
+         procedure Safe_Initialize is new Safe_Process (Process => Process);
+      begin -- Initialize
+         if Settings = Storage.No_Context then
+            raise Invalid_Context;
+         end if;
+
+         Safe_Initialize (Settings.all);
       end  Initialize;
 
       function Name (Settings : Context'Class) return String is
@@ -159,44 +173,74 @@ package body Solid.CGI.Session is
       end Lifetime;
 
       procedure Set_Lifetime (Settings : in out Context'Class; To : in Duration) is
+         procedure Process is
+         begin -- Process
+            Settings.Lifetime := To;
+         end Process;
+
+         procedure Safe_Set_Lifetime is new Safe_Process (Process => Process);
       begin -- Set_Lifetime
-         Settings.Lifetime := To;
+         Safe_Set_Lifetime (Settings);
       end Set_Lifetime;
+
+      procedure Safe_Process (Settings : in out Context'Class) is
+         Lock : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (Settings.Lock'Access);
+      begin -- Safe_Process
+         Process;
+      end Safe_Process;
    end Storage;
+
+   procedure Create (Settings : not null Storage.Context_Handle; Session : out Data) is
+      procedure Process is
+      begin -- Process
+         Initialize (Session => Session, Settings => Settings);
+         Storage.Create (Settings => Session.Settings.all, Session => Session);
+      end Process;
+
+      procedure Safe_Create is new Storage.Safe_Process (Process => Process);
+   begin -- Create
+      if not Storage.Valid (Settings.all) then
+         raise Invalid_Context;
+      end if;
+
+      Safe_Create (Session.Settings.all);
+   end Create;
 
    function Create (Settings : not null Storage.Context_Handle) return Data is
    begin -- Create
       if not Storage.Valid (Settings.all) then
-         raise Storage.Invalid_Context;
+         raise Invalid_Context;
       end if;
 
-      --~ Locked : declare
-         --~ Lock    : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (Settings.Lock'Access);
-      --~ begin -- Locked
-         return Session : Data do
-            Initialize (Session => Session, Settings => Settings);
-            Storage.Create (Settings => Session.Settings.all, Session => Session);
-         end return;
-      --~ end Locked;
+      return Session : Data do
+         Create (Settings => Settings, Session => Session);
+      end return;
    end Create;
 
    function Read (From : not null Storage.Context_Handle; Identity : String) return Data is
-      --~ Lock : PragmARC.Safe_Semaphore_Handler.Safe_Semaphore (From.Lock'Access);
-
       use type Ada.Calendar.Time;
    begin -- Read
       if not Storage.Valid (From.all) then
-         raise Storage.Invalid_Context;
+         raise Invalid_Context;
       end if;
 
       return Result : Data do
-         Storage.Read (Settings => From.all, Identity => Identity, Session => Result);
+         declare
+            procedure Process is
+            begin -- Process
+               Storage.Read (Settings => From.all, Identity => Identity, Session => Result);
+            end Process;
 
-         if Ada.Calendar.Clock > Result.Expires then
-            raise Expired;
-         end if;
+            procedure Safe_Read is new Storage.Safe_Process (Process => Process);
+         begin
+            Safe_Read (From.all);
 
-         Result.Settings := From;
+            if Ada.Calendar.Clock > Result.Expires then
+               raise Expired;
+            end if;
+
+            Result.Settings := From;
+         end;
       end return;
    end Read;
 
@@ -212,7 +256,7 @@ package body Solid.CGI.Session is
    procedure Finalize (Object : in out Data) is
       use type Storage.Context_Handle;
    begin -- Finalize
-      if Object.Settings = null or else not Storage.Valid (Object.Settings.all) then
+      if Object.Settings = Storage.No_Context or else not Storage.Valid (Object.Settings.all) then
          return; -- If Object does not have a valid context, nothing can be done.
       end if;
 

@@ -54,8 +54,6 @@ package Solid.CGI.Request is
 
    -- Referrer
 
-   -- Cookies
-
    function Host (Object : Data) return String;
    -- Returns the host.
 
@@ -106,10 +104,10 @@ package Solid.CGI.Request is
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
    -- Returns the payload.
 
-   --~ function Session (Object : Data) return CGI.Session.Data;
-private -- Solid.CGI.Request
-   pragma Assert (Ada.Streams.Stream_Element'Size = 8);
+   function Session (Object : Data) return CGI.Session.Data;
 
+   procedure New_Session (Object : in Data; Session : out CGI.Session.Data; Headers : in out CGI.Headers.List);
+private -- Solid.CGI.Request
    type Data is new Ada.Finalization.Controlled with record
       Created            : Ada.Calendar.Time;
       Environment        : CGI.Environment.Handle;
@@ -118,9 +116,11 @@ private -- Solid.CGI.Request
       Cookies            : CGI.Cookies.List;
       Parameters         : CGI.Parameters.List;
       Payload            : Strings.U_String;
-      Session_Context    : Session.Storage.Context_Handle;
+      Session_Context    : CGI.Session.Storage.Context_Handle;
    end record;
 
    overriding
    procedure Initialize (Object : in out Data);
+
+   pragma Assert (Ada.Streams.Stream_Element'Size = 8);
 end Solid.CGI.Request;

@@ -33,7 +33,7 @@ package body Solid.CGI.Session.Files is
       Ada.Directories.Create_Path (New_Directory => +Settings.Path);
    exception -- Initialize
       when Ada.Directories.Name_Error | Ada.Directories.Use_Error =>
-         raise Storage.Invalid_Context with "could not create path.";
+         raise Invalid_Context with "could not create path.";
    end Initialize;
 
    function Data_File (Settings : Context; Identity : String) return String;

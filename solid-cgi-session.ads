@@ -14,6 +14,8 @@ package Solid.CGI.Session is
    -- The session data stores a client's set of data, based on a unique identity.
    -- Any data type may be stored in the session.  See Solid.CGI.Session.[Generic_]Tuples.
 
+   function Valid (Session : Data) return Boolean;
+
    Not_Found : exception;
 
    -- Create and Read operations are found below the Storage child package.
@@ -48,6 +50,9 @@ package Solid.CGI.Session is
    -- Raises Not_Found if not Exists (Session, Key).
 
    -- For commonly-used tuple operations, see Solid.CGI.Session.Tuples.
+
+   Invalid_Context : exception;
+
    package Storage is
       -- Context.
       type Context is abstract tagged limited private;
@@ -56,8 +61,6 @@ package Solid.CGI.Session is
       -- Extension is required for storage implementation of session data.
 
       No_Context : constant Context_Handle;
-
-      Invalid_Context : exception;
 
       procedure Initialize (Settings : in out Context_Handle; Name : String := "Session"; Lifetime : Duration := Duration'Last);
       -- Initializes the session context in Settings, setting the session name to Name.
@@ -76,11 +79,11 @@ package Solid.CGI.Session is
       procedure Set_Lifetime (Settings : in out Context'Class; To : in Duration);
       -- Sets the lifetime for session data objects created using Settings.
 
-
-      -- Synchronization operations, used by Solid.CGI.Session internals.
-      --~ generic
-         --~ with procedure Process (Session : in out Data);
-      --~ procedure
+      generic
+         with procedure Process;
+      procedure Safe_Process (Settings : in out Context'Class);
+      -- Executes Process with exclusive access to Settings.  Used only by operations in the parent package.
+      -- Do not use in extensions of this package!!!
 
       -- Operations invoked by this package, which must be overriden to create new session storage schemes.
       procedure Initialize (Settings : in out Context) is abstract;
@@ -119,6 +122,8 @@ package Solid.CGI.Session is
 
       No_Context : constant Context_Handle := null;
    end Storage;
+
+   procedure Create (Settings : not null Storage.Context_Handle; Session : out Data);
 
    function Create (Settings : not null Storage.Context_Handle) return Data;
    -- Returns a new session data associated with the session context in Settings.
@@ -169,4 +174,6 @@ private -- Solid.CGI.Session
    procedure Set_Tuple (Session : in out Data; Item : in Tuple'Class);
    -- Sets Item for Session.
    -- To be used by instantiations of the Tuples package.
+
+   No_Session : constant Data := (Ada.Finalization.Limited_Controlled with others => <>);
 end Solid.CGI.Session;

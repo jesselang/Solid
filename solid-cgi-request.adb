@@ -189,10 +189,51 @@ package body Solid.CGI.Request is
       return Text_Streams.To_Stream (+Object.Payload);
    end Payload;
 
-   --~ function Session (Object : Data) return CGI.Session.Data is
-   --~ begin -- Session
+   function Session (Object : Data) return Boolean is
+      Cookies : constant CGI.Cookies.List := Request.Cookies (Object);
 
-   --~ end Session;
+      use type CGI.Session.Storage.Context_Handle;
+   begin -- Session
+      if Object.Session_Context = CGI.Session.Storage.No_Context then
+         raise CGI.Session.Invalid_Context with "Session: No session context.";
+      end if;
+
+      declare
+         Session_Name : constant String := Object.Session_Context.Name;
+      begin
+         return Cookies.Exists (Session_Name);
+      end;
+   end Session;
+
+   function Session (Object : Data) return CGI.Session.Data is
+      Cookies    : constant CGI.Cookies.List := Request.Cookies (Object);
+   begin -- Session
+      if not Session (Object) then
+         return No_Session : CGI.Session.Data do
+            null; -- An invalid session.
+         end return;
+      end if;
+
+      declare
+         Session_Name : constant String := Object.Session_Context.Name;
+      begin
+         return CGI.Session.Read (From => Object.Session_Context, Identity => Cookies.Get (Name => Session_Name) );
+      end;
+   end Session;
+
+   procedure New_Session (Object : in Data; Session : out CGI.Session.Data; Headers : in out CGI.Headers.List) is
+   begin -- New_Session
+      if Request.Session (Object) then
+         raise CGI.Session.Invalid_Context with "New_Session: Session already exists.";
+      end if;
+
+      declare
+         Session_Name : constant String := Object.Session_Context.Name;
+      begin
+         CGI.Session.Create (Settings => Object.Session_Context, Session => Session);
+         CGI.Cookies.Set (Headers, Name => Session_Name, Value => CGI.Session.Identity (Session) );
+      end;
+   end New_Session;
 
    procedure Initialize (Object : in out Data) is
    begin -- Initialize
