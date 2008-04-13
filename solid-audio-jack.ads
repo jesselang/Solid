@@ -23,10 +23,6 @@ package Solid.Audio.Jack is
    procedure Connect_To_Physical_Ports (Connection : in out Client);
    -- Connects the Connection's ports to Jack's physical ports (sound card).
 
-   -- Handy processors.
-   --~ procedure Copy (Input : in Sample_Buffer; Output : out Sample_Buffer);
-   --~ -- Copies Input to Output.
-
    procedure Silence (Buffer : out Sample_Buffer);
    -- Writes silence to Buffer.
 private -- Solid.Audio.Jack

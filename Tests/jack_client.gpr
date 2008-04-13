@@ -8,8 +8,6 @@ project Jack_Client is
        "jack_process.adb");
    for Main use ("jack_client.adb");
 
-   --package Builder renames Solid.Builder;
-   -- package Compiler renames Solid.Compiler;
    package Compiler is
       for Default_Switches ("Ada") use ("-fstack-check");
    end Compiler;

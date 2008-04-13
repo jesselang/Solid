@@ -13,9 +13,6 @@ package body Solid.Audio.Jack is
    -- Callback handed to Jack for audio processing for clients.
    pragma Convention (C, Process_Audio); -- Jack needs to call this as a callback, so it must be declared with a C convention.
 
-   function Nothing (nframes : Thin.jack_nframes_t; Context : Thin.void_ptr) return Thin.int;
-   pragma Convention (C, Nothing);
-
    procedure Open (Connection : out Client; Name : in String; Server : in String := "") is
       Options : Thin.Bitwise_Options.Value_List (1 .. 3) := (Thin.JackNoStartServer,
                                                              Thin.JackUseExactName,
@@ -38,10 +35,7 @@ package body Solid.Audio.Jack is
          raise Client_Error with "Couldn't connect to jack: " & Thin.JackStatus'Image (Thin.Bitwise_Status.Values (Status) (1) );
       end if;
 
-      --~ Thin.jack_on_shutdown (Connection.Handle,
-                             --~ shutdown_callback => Thread.Finalize'Access,
-                             --~ arg               => System.Null_Address);
-
+      -- Required for the stack to remain sane.
       Result := Thin.jack_set_thread_init_callback (Connection.Handle,
                                                     thread_init_callback => Thread.Initialize'Access,
                                                     arg                  => System.Null_Address);
@@ -258,15 +252,4 @@ package body Solid.Audio.Jack is
 
          return 1;
    end Process_Audio;
-
-   function Nothing (nframes : Thin.jack_nframes_t; Context : Thin.void_ptr) return Thin.int is
-   begin -- Nothing
-      Ada.Text_IO.Put ('*');
-      return 0;
-   exception -- Nothing
-      when E : others =>
-         Ada.Text_IO.Put_Line ("Nothing - " & Ada.Exceptions.Exception_Information (E) );
-
-         return 1;
-   end Nothing;
 end Solid.Audio.Jack;
