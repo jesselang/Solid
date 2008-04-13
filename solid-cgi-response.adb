@@ -47,6 +47,14 @@ package body Solid.CGI.Response is
       return Result;
    end Build;
 
+   function URL (Location : String) return Data is
+      Result : Data;
+   begin -- URL
+      Result.Headers.Add (Name => "Location", Value => Location);
+
+      return Result;
+   end URL;
+
    function Headers (Object : Data) return CGI.Headers.List is
    begin -- Headers
       return Object.Headers;

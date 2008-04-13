@@ -72,8 +72,10 @@ package body Solid.CGI.Standard is
                   -- Is post query needed?
                   Request.Set.Post_Query (Object => Object, Post_Query => Post_Query (1 .. Post_Query_Last) );
                   -- Parameters could be parsed and set upon request.
-                  Request.Set.Parameters (Object     => Object,
-                                          Parameters => CGI.Parameters.Parse_URL_Encoding (Post_Query (1 .. Post_Query_Last) ) );
+                  Request.Set.Parameters
+                     (Object     => Object,
+                      Parameters => CGI.Parameters.Parse_URL_Encoding (Request.Query (Object => Object) & '&' &
+                                                                       Post_Query (1 .. Post_Query_Last) ) );
                end if;
             else
                raise Invalid_Post with "unhandled content type: " & Request.Content_Type (Object) & '.';

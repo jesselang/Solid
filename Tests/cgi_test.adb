@@ -49,7 +49,8 @@ procedure CGI_Test is
          Request.New_Session (Client, Session => Session, Headers => Headers);
          return Response.Build ("text/plain", Message_Body => "No session exists, so one was created.", Headers => Headers);
       else
-         return Response.Build ("text/plain", Message_Body => "A session exists.");
+         --return Response.Build ("text/plain", Message_Body => "A session exists.");
+         return Response.URL ("/post_test.xml");
       end if;
       --~ Cookies := Request.Cookies (Client);
       --~ if Cookies.Exists (Name => "Solid") then
@@ -67,7 +68,7 @@ procedure CGI_Test is
    end Session_Test;
 
    Context : Solid.CGI.Session.Storage.Context_Handle := Solid.CGI.Session.Files.Initialize (Path => "/tmp/solid-sessions");
-   -- procedure Test is new Solid.CGI.Standard.Program (Process => Solid.CGI.Response.Test, Session_Context => Context);
+   procedure Test is new Solid.CGI.Standard.Program (Process => Solid.CGI.Response.Test, Session_Context => Context);
    procedure Sessions is new Solid.CGI.Standard.Program (Process => Session_Test, Session_Context => Context);
 
    --procedure Cookie is new Solid.CGI.Standard.Program (Process => Cookie_Test);

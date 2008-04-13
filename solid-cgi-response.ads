@@ -15,6 +15,9 @@ package Solid.CGI.Response is
                    Headers      : CGI.Headers.List := CGI.Headers.No_Headers)
    return Data;
 
+   function URL (Location : String) return Data;
+   -- Redirect to Location.  This is a temporary redirect.
+
    -- The following functions are designed to be used by the library, not by client applications.
    function Headers (Object : Data) return CGI.Headers.List;
 

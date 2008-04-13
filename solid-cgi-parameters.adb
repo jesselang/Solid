@@ -18,6 +18,10 @@ package body Solid.CGI.Parameters is
          if Slice_Count (Name_Value) = 2 then
             Result.Add (Name => URL.Decode (Slice (Name_Value, Index => 1) ),
                         Value => URL.Decode (Slice (Name_Value, Index => 2) ) );
+         elsif Slice_Count (Name_Value) = 1 then
+            Result.Add (Name => URL.Decode (Slice (Name_Value, Index => 1) ), Value => "");
+         else
+            null; -- Invalid parameter, move on.
          end if;
       end loop;
 
