@@ -7,7 +7,7 @@ package Solid.Audio.Jack is
    Client_Error : exception;
    -- All operations may raise Client_Error.
 
-   procedure Open (Connection : out Client; Name : in String; Server : in String := "default");
+   procedure Open (Connection : out Client; Name : in String; Server : in String := "");
    -- Opens a Connection with Name.
 
    procedure Close (Connection : in out Client);
@@ -40,7 +40,7 @@ private -- Solid.Audio.Jack
 
    No_Process : constant Audio_Process := (Input => null, Output => null, Process => null);
 
-   type Two_Channels is array (1 .. 2) of Audio_Process;
+   type Two_Channels is array (Positive range 1 .. 2) of Audio_Process;
    -- Dirty hack to get my program working.  This should be a protected vector, reserved to two.
 
    package Process_Conversion is new System.Address_To_Access_Conversions (Two_Channels);

@@ -7,6 +7,9 @@ project Solid is
        "solid-audio.ads",
        "solid-audio-jack.adb",
        "solid-audio-jack-thin.ads",
+       "solid-audio-jack-thread.adb",
+       "solid-audio-ladspa.ads",
+       "solid-audio-ladspa-thin.ads",
        "solid-calendar.ads",
        "solid-cgi.ads",
        "solid-cgi-containers.ads",
@@ -41,7 +44,7 @@ project Solid is
        "solid-text_streams.adb");
    package Compiler is
       for Default_Switches ("Ada") use ("-fstack-check");
-      -- for Switches ("solid-audio-jack.adb") use ("");
+      for Switches ("solid-audio-jack-thread.adb") use ("");
       for Switches ("solid-cgi-request.adb") use ("-fstack-check", "-gnata");
    end Compiler;
    package Builder is

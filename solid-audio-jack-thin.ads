@@ -11,13 +11,7 @@ private package Solid.Audio.Jack.Thin is
    JACK_DEFAULT_AUDIO_TYPE : constant String := "32 bit float mono audio";
 
    package C renames Standard.Interfaces.C;
-   subtype jack_nframes_t is Solid.Audio.Buffer_Size;
-   subtype void_ptr is C.Extensions.void_ptr;
    subtype int is C.int;
-
-   type JackProcessCallback is access function (nframes : jack_nframes_t; arg : void_ptr) return int;
-   -- typedef int  (*JackProcessCallback)(jack_nframes_t nframes, void *arg);
-   pragma Convention (C, JackProcessCallback);
 
    subtype chars_ptr is C.Strings.chars_ptr;
    type jack_options_t is new C.unsigned_long;
@@ -38,6 +32,34 @@ private package Solid.Audio.Jack.Thin is
    function jack_client_close (client : jack_client_t) return int;
    pragma Import (C, jack_client_close);
    --~ int jack_client_close (jack_client_t *client);
+
+   subtype void_ptr is C.Extensions.void_ptr;
+
+   type JackThreadInitCallback is access procedure (arg : void_ptr);
+   --~ typedef void  (*JackThreadInitCallback)(void *arg);
+   pragma Convention (C, JackThreadInitCallback);
+
+   function jack_set_thread_init_callback (client : jack_client_t; thread_init_callback : JackThreadInitCallback; arg : void_ptr)
+   return int;
+   --~ int jack_set_thread_init_callback (jack_client_t *client,
+				   --~ JackThreadInitCallback thread_init_callback,
+				   --~ void *arg);
+   pragma Import (C, jack_set_thread_init_callback);
+
+   type JackShutdownCallback is access procedure (arg : void_ptr);
+   -- I had to make this one up. :^)
+   pragma Convention (C, JackShutdownCallback);
+
+   procedure jack_on_shutdown (client : jack_client_t; shutdown_callback : JackShutdownCallback; arg : void_ptr);
+   --~ void jack_on_shutdown (jack_client_t *client,
+		       --~ void (*function)(void *arg), void *arg);
+   pragma Import (C, jack_on_shutdown);
+
+   subtype jack_nframes_t is Solid.Audio.Buffer_Size;
+
+   type JackProcessCallback is access function (nframes : jack_nframes_t; arg : void_ptr) return int;
+   -- typedef int  (*JackProcessCallback)(jack_nframes_t nframes, void *arg);
+   pragma Convention (C, JackProcessCallback);
 
    function jack_set_process_callback (client : jack_client_t; process_callback : JackProcessCallback; arg : void_ptr) return int;
    pragma Import (C, jack_set_process_callback);
@@ -119,7 +141,7 @@ private package Solid.Audio.Jack.Thin is
 
    package Bitwise_Options is new Solid.Interfaces.Bitwise_Enumerations (JackOptions, jack_options_t);
 
-   JackOpenOptions : constant Bitwise_Options.Value_List := (JackServerName, JackNoStartServer, JackUseExactName);
+   subtype JackOpenOptions is JackOptions range JackNoStartServer .. JackServerName;
 
    -- Server status.
    type JackStatus is (JackFailure,

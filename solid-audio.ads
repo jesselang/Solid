@@ -1,10 +1,9 @@
+with Interfaces.C.Extensions;
 with Interfaces.C.Pointers;
 
 package Solid.Audio is
-   pragma Preelaborate;
-
    type Sample is new Interfaces.C.C_Float;
-   type Buffer_Size is new Interfaces.C.size_t;
+   type Buffer_Size is new Interfaces.C.Extensions.Unsigned_32;
    type Sample_Buffer is array (Buffer_Size range <>) of aliased Sample;
    package Buffers is new Interfaces.C.Pointers (Index              => Buffer_Size,
                                                  Element            => Sample,

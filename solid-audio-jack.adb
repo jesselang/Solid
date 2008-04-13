@@ -3,6 +3,7 @@ with Ada.Text_IO;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;
 with Solid.Audio.Jack.Thin;
+with Solid.Audio.Jack.Thread;
 with System;
 
 package body Solid.Audio.Jack is
@@ -15,28 +16,44 @@ package body Solid.Audio.Jack is
    function Nothing (nframes : Thin.jack_nframes_t; Context : Thin.void_ptr) return Thin.int;
    pragma Convention (C, Nothing);
 
-   procedure Open (Connection : out Client; Name : in String; Server : in String := "default") is
-      JackOpenOptions : constant Thin.Bitwise_Options.Value_List := (Thin.JackServerName,
-                                                                     Thin.JackNoStartServer,
-                                                                     Thin.JackUseExactName);
-
-      Status : aliased Thin.jack_status_t;
-      Result : Thin.int;
+   procedure Open (Connection : out Client; Name : in String; Server : in String := "") is
+      Options : Thin.Bitwise_Options.Value_List (1 .. 3) := (Thin.JackNoStartServer,
+                                                             Thin.JackUseExactName,
+                                                             Thin.JackNullOption);
+      Status  : aliased Thin.jack_status_t;
+      Result  : Thin.int;
 
       use type Thin.int;
    begin -- Open
+      if Server /= "" then
+         Options (Options'Last) := Thin.JackServerName;
+      end if;
+
       Connection.Handle := Thin.jack_client_open (New_String (Name),
-                                                  Options     => Thin.Bitwise_Options.Bits (JackOpenOptions),
+                                                  Options     => Thin.Bitwise_Options.Bits (Options),
                                                   Status      => Status'Access,
                                                   Server_Name => New_String (Server) );
 
       if Connection.Handle = null then
          raise Client_Error with "Couldn't connect to jack: " & Thin.JackStatus'Image (Thin.Bitwise_Status.Values (Status) (1) );
       end if;
+
+      --~ Thin.jack_on_shutdown (Connection.Handle,
+                             --~ shutdown_callback => Thread.Finalize'Access,
+                             --~ arg               => System.Null_Address);
+
+      Result := Thin.jack_set_thread_init_callback (Connection.Handle,
+                                                    thread_init_callback => Thread.Initialize'Access,
+                                                    arg                  => System.Null_Address);
+
+      if Result /= 0 then
+         raise Client_Error with "Couldn't set thread init callback for jack.";
+      end if;
+
       -- Set the internal callback, and activate.
 
       Result := Thin.jack_set_process_callback (Connection.Handle,
-                                                process_callback => Process_Audio'Access, -- Nothing'Access, -- Process_Audio'Access,
+                                                process_callback => Process_Audio'Access,
                                                 arg              => Process_Conversion.To_Address (Connection.Processes) );
 
       if Result /= 0 then
@@ -45,6 +62,7 @@ package body Solid.Audio.Jack is
    exception -- Open
       when E : others =>
          Ada.Text_IO.Put_Line ("Open - " & Ada.Exceptions.Exception_Information (E) );
+         raise;
    end Open;
 
    procedure Close (Connection : in out Client) is
@@ -69,6 +87,7 @@ package body Solid.Audio.Jack is
    exception -- Close
       when E : others =>
          Ada.Text_IO.Put_Line ("Close - " & Ada.Exceptions.Exception_Information (E) );
+         raise;
    end Close;
 
    procedure Register (Connection : in out Client; Input : in String; Output : in String; Process : not null Audio_Processor) is
@@ -132,6 +151,7 @@ package body Solid.Audio.Jack is
    exception -- Register
       when E : others =>
          Ada.Text_IO.Put_Line ("Register - " & Ada.Exceptions.Exception_Information (E) );
+         raise;
    end Register;
 
    procedure Connect_To_Physical_Ports (Connection : in out Client) is
@@ -183,6 +203,7 @@ package body Solid.Audio.Jack is
    exception -- Connect_To_Physical_Ports
       when E : others =>
          Ada.Text_IO.Put_Line ("Connect_To_Physical_Ports - " & Ada.Exceptions.Exception_Information (E) );
+         raise;
    end Connect_To_Physical_Ports;
 
    procedure Silence (Buffer : out Sample_Buffer) is
@@ -221,10 +242,10 @@ package body Solid.Audio.Jack is
             if Processes (Index) /= No_Process then
                Input_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Input, nframes => nframes);
                Output_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Output, nframes => nframes);
-               --~ Output_Buffer := Buffers.Value (Input_Handle, Length => Buffer_Length - 1);
-               --~ Processes (Index).Process (Input  => Buffers.Value (Input_Handle, Length => Buffer_Length),
-                                          --~ Output => Output_Buffer);
-               --~ Write (Buffer => Output_Buffer, To => Output_Handle);
+               Output_Buffer := Buffers.Value (Input_Handle, Length => Buffer_Length);
+               Processes (Index).Process (Input  => Buffers.Value (Input_Handle, Length => Buffer_Length),
+                                          Output => Output_Buffer);
+               Write (Buffer => Output_Buffer, To => Output_Handle);
             end if;
          end loop;
       end if;
