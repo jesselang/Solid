@@ -206,7 +206,6 @@ package body Solid.Web.Request is
    end Session;
 
    function Session (Object : Data) return Web.Session.Data is
-      Cookies    : constant Web.Cookies.List := Request.Cookies (Object);
    begin -- Session
       if not Session (Object) then
          return No_Session : Web.Session.Data do
@@ -214,18 +213,27 @@ package body Solid.Web.Request is
          end return;
       end if;
 
-      declare
-         Session_Name : constant String := Object.Session_Context.Name;
+      Read_Session : declare
+         Session_Name : constant String           := Object.Session_Context.Name;
+         Cookies      : constant Web.Cookies.List := Request.Cookies (Object);
       begin
          return Web.Session.Read (From => Object.Session_Context, Identity => Cookies.Get (Name => Session_Name) );
-      end;
+      exception -- Read_Session
+         when Web.Session.Not_Found =>
+            -- If this were a procedure, we could remove the cookie from the data,
+            -- so an appropriate check could be made in New_Session.
+            return No_Session : Web.Session.Data do
+               null; -- An invalid session.
+            end return;
+      end Read_Session;
    end Session;
 
    procedure New_Session (Object : in Data; Session : out Web.Session.Data; Headers : in out Web.Headers.List) is
    begin -- New_Session
-      if Request.Session (Object) then
-         raise Web.Session.Invalid_Context with "New_Session: Session already exists.";
-      end if;
+      -- This would be an appropriate check mentioned above.
+      --~ if Request.Session (Object) then
+         --~ raise Web.Session.Invalid_Context with "New_Session: Session already exists.";
+      --~ end if;
 
       declare
          Session_Name : constant String := Object.Session_Context.Name;
