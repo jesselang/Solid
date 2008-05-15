@@ -1,4 +1,4 @@
-with Ada.Calendar.Formatting;
+--~ with Ada.Calendar.Formatting;
 with PragmARC.Date_Handler;
 with PragmARC.Mixed_Case;
 with Solid.Strings;
@@ -44,26 +44,27 @@ package body Solid.Web.Cookies is
       Year        : Ada.Calendar.Year_Number;
       Month       : Ada.Calendar.Month_Number;
       Day         : Ada.Calendar.Day_Number;
-      Hour        : Ada.Calendar.Formatting.Hour_Number;
-      Minute      : Ada.Calendar.Formatting.Minute_Number;
-      Second      : Ada.Calendar.Formatting.Second_Number;
-      Sub_Second  : Ada.Calendar.Formatting.Second_Duration;
-      Leap_Second : Boolean;
+      Hour        : PragmARC.Date_Handler.Hour_Number;
+      Minute      : PragmARC.Date_Handler.Minute_Number;
+      Seconds      : PragmARC.Date_Handler.Minute_Duration;
 
       use PragmARC.Date_Handler;
    begin -- Date_Image
-      Ada.Calendar.Formatting.Split (Date        => Date,
-                                     Year        => Year,
-                                     Month       => Month,
-                                     Day         => Day,
-                                     Hour        => Hour,
-                                     Minute      => Minute,
-                                     Second      => Second,
-                                     Sub_Second  => Sub_Second,
-                                     Leap_Second => Leap_Second);
+      -- We'll wait until Ada2005 becomes more standard before using this operation.
+      --~ Ada.Calendar.Formatting.Split (Date        => Date,
+                                     --~ Year        => Year,
+                                     --~ Month       => Month,
+                                     --~ Day         => Day,
+                                     --~ Hour        => Hour,
+                                     --~ Minute      => Minute,
+                                     --~ Second      => Second,
+                                     --~ Sub_Second  => Sub_Second,
+                                     --~ Leap_Second => Leap_Second);
+      Split (Date => Date, Year => Year, Month => Month, Day => Day, Hour => Hour, Minute => Minute, Seconds => Seconds);
+
       return PragmARC.Mixed_Case (Day_Name'Image (Day_Of_Week (Date) ) (1 .. 3) ) & ", " & Day_Image (Day) & '-' &
              Month_Image_Short (Month => Month) & '-' & Year_Image_Long (Year => Year) & ' ' & Hour_Image_24 (Hour => Hour) &
              ':' & Minute_Image (Minute => Minute) & ':' &
-             Seconds_Image (Seconds => PragmARC.Date_Handler.Minute_Duration (Duration (Second) + Sub_Second) ) & " GMT";
+             Seconds_Image (Seconds => Seconds) & " GMT";
    end Date_Image;
 end Solid.Web.Cookies;
