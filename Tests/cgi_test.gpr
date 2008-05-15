@@ -1,9 +1,0 @@
-with "../solid";
-
-project CGI_Test is
-   for Object_Dir use "obj";
-   for Exec_Dir use ".";
-   for Main use ("cgi_test.adb");
-
-   package Builder renames Solid.Builder;
-end CGI_Test;
