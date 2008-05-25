@@ -48,10 +48,11 @@ package body Solid.Audio.Jack.Thread is
       pragma Import (C, Queuing_Policy, "__gl_queuing_policy");
       Task_Dispatching_Policy : Character;
       pragma Import (C, Task_Dispatching_Policy, "__gl_task_dispatching_policy");
-      Priority_Specific_Dispatching : System.Address;
-      pragma Import (C, Priority_Specific_Dispatching, "__gl_priority_specific_dispatching");
-      Num_Specific_Dispatching : Integer;
-      pragma Import (C, Num_Specific_Dispatching, "__gl_num_specific_dispatching");
+      -- FSF GNAT doesn't seem to like the following commented lines.
+      --~ Priority_Specific_Dispatching : System.Address;
+      --~ pragma Import (C, Priority_Specific_Dispatching, "__gl_priority_specific_dispatching");
+      --~ Num_Specific_Dispatching : Integer;
+      --~ pragma Import (C, Num_Specific_Dispatching, "__gl_num_specific_dispatching");
       Interrupt_States : System.Address;
       pragma Import (C, Interrupt_States, "__gl_interrupt_states");
       Num_Interrupt_States : Integer;
@@ -64,8 +65,9 @@ package body Solid.Audio.Jack.Thread is
       pragma Import (C, Detect_Blocking, "__gl_detect_blocking");
       Default_Stack_Size : Integer;
       pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
-      Leap_Seconds_Support : Integer;
-      pragma Import (C, Leap_Seconds_Support, "__gl_leap_seconds_support");
+      -- FSF GNAT doesn't seem to like the following commented lines.
+      --~ Leap_Seconds_Support : Integer;
+      --~ pragma Import (C, Leap_Seconds_Support, "__gl_leap_seconds_support");
 
       procedure Install_Handler;
       pragma Import (C, Install_Handler, "__gnat_install_handler");
@@ -79,40 +81,44 @@ package body Solid.Audio.Jack.Thread is
       Locking_Policy := ' ';
       Queuing_Policy := ' ';
       Task_Dispatching_Policy := ' ';
-      System.Restrictions.Run_Time_Restrictions :=
-        (Set =>
-          (False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False, False, False, False, False, False, False,
-           False, False),
-         Value => (0, 0, 0, 0, 0, 0, 0),
-         Violated =>
-          (False, False, True, True, False, True, True, True,
-           True, True, False, False, True, False, False, True,
-           True, False, True, True, True, True, True, True,
-           False, False, True, False, True, False, True, False,
-           False, True, False, False, False, True, False, True,
-           False, False, False, False, False, False, False, True,
-           True, True, False, False, False, True, True, False,
-           True, True, True, False, False, False, False, False,
-           False, False),
-         Count => (0, 0, 0, 0, 0, 0, 0),
-         Unknown => (False, False, False, False, False, False, False));
-      Priority_Specific_Dispatching :=
-        Local_Priority_Specific_Dispatching'Address;
-      Num_Specific_Dispatching := 0;
+      -- If this is needed, it will need to be tweaked for FSF GNAT.
+      --~ System.Restrictions.Run_Time_Restrictions :=
+        --~ (Set =>
+          --~ (False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False, False, False, False, False, False, False,
+           --~ False, False),
+         --~ Value => (0, 0, 0, 0, 0, 0, 0),
+         --~ Violated =>
+          --~ (False, False, True, True, False, True, True, True,
+           --~ True, True, False, False, True, False, False, True,
+           --~ True, False, True, True, True, True, True, True,
+           --~ False, False, True, False, True, False, True, False,
+           --~ False, True, False, False, False, True, False, True,
+           --~ False, False, False, False, False, False, False, True,
+           --~ True, True, False, False, False, True, True, False,
+           --~ True, True, True, False, False, False, False, False,
+           --~ False, False),
+         --~ Count => (0, 0, 0, 0, 0, 0, 0),
+         --~ Unknown => (False, False, False, False, False, False, False));
+
+      -- FSF GNAT doesn't seem to like the following commented lines.
+      --~ Priority_Specific_Dispatching :=
+        --~ Local_Priority_Specific_Dispatching'Address;
+      --~ Num_Specific_Dispatching := 0;
       Interrupt_States := Local_Interrupt_States'Address;
       Num_Interrupt_States := 0;
       Unreserve_All_Interrupts := 0;
       Zero_Cost_Exceptions := 1;
       Detect_Blocking := 0;
       Default_Stack_Size := -1;
-      Leap_Seconds_Support := 0;
+      -- FSF GNAT doesn't seem to like the following commented lines.
+      --~ Leap_Seconds_Support := 0;
 
       -- This doesn't seem to be required, but we'll leave it in for now.
       if Handler_Installed = 0 then

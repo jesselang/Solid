@@ -9,5 +9,10 @@ package Solid.Audio is
                                                  Element            => Sample,
                                                  Element_Array      => Sample_Buffer,
                                                  Default_Terminator => Sample'First);
+                                                 -- Do *not* use operations that use Default_Terminator.
+                                                 -- Use length-based operations only.
+                                                 -- This is not a valid terminator.
    subtype Buffer_Handle is Buffers.Pointer;
+
+   type Sample_Rate is range 8000 .. 48000;
 end Solid.Audio;

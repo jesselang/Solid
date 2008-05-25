@@ -139,7 +139,10 @@ package body Solid.Web.Session is
 
 
    package body Storage is
-      procedure Initialize (Settings : in out Context_Handle; Name : String := "Session"; Lifetime : Duration := Duration'Last) is
+      procedure Initialize (Settings : in out Context_Handle;
+                            Name     : in     String           := "Session";
+                            Lifetime : in     Storage_Lifetime := Storage_Lifetime'Last)
+      is
          procedure Process is
          begin -- Process
             Settings.Name := +Name;
@@ -206,42 +209,70 @@ package body Solid.Web.Session is
       Safe_Create (Settings.all);
    end Create;
 
-   function Create (Settings : not null Storage.Context_Handle) return Data is
+   function Create (Settings : not null Storage.Context_Handle) return Handle is
+      Session : Handle := new Data;
    begin -- Create
       if not Storage.Valid (Settings.all) then
          raise Invalid_Context;
       end if;
 
-      return Session : Data do
-         Create (Settings => Settings, Session => Session);
-      end return;
+      Create (Settings => Settings, Session => Session.all);
+
+      return Session;
+
+      --------------------------------------------------------------------------
+      -- Once FSF GNAT supports extended returns, Data may be returned directly.
+      --~ return Session : Data do
+         --~ Create (Settings => Settings, Session => Session);
+      --~ end return;
    end Create;
 
-   function Read (From : not null Storage.Context_Handle; Identity : String) return Data is
+   function Read (From : not null Storage.Context_Handle; Identity : String) return Handle is
+      Session : Handle := new Data;
+
+      procedure Process is
+      begin -- Process
+         Storage.Read (Settings => From.all, Identity => Identity, Session => Session.all);
+      end Process;
+
+      procedure Safe_Read is new Storage.Safe_Process (Process => Process);
+
       use type Ada.Calendar.Time;
    begin -- Read
       if not Storage.Valid (From.all) then
          raise Invalid_Context;
       end if;
 
-      return Result : Data do
-         declare
-            procedure Process is
-            begin -- Process
-               Storage.Read (Settings => From.all, Identity => Identity, Session => Result);
-            end Process;
+      Safe_Read (From.all);
 
-            procedure Safe_Read is new Storage.Safe_Process (Process => Process);
-         begin
-            Safe_Read (From.all);
+      if Ada.Calendar.Clock > Session.Expires then
+         raise Expired;
+      end if;
 
-            if Ada.Calendar.Clock > Result.Expires then
-               raise Expired;
-            end if;
+      Session.Settings := From;
 
-            Result.Settings := From;
-         end;
-      end return;
+      return Session;
+
+      ------------------------------------------------------------------------------------
+      -- Once FSF GNAT supports extended return statements, Data may be directly returned.
+      --~ return Result : Data do
+         --~ declare
+            --~ procedure Process is
+            --~ begin -- Process
+               --~ Storage.Read (Settings => From.all, Identity => Identity, Session => Result);
+            --~ end Process;
+
+            --~ procedure Safe_Read is new Storage.Safe_Process (Process => Process);
+         --~ begin
+            --~ Safe_Read (From.all);
+
+            --~ if Ada.Calendar.Clock > Result.Expires then
+               --~ raise Expired;
+            --~ end if;
+
+            --~ Result.Settings := From;
+         --~ end;
+      --~ end return;
    end Read;
 
    procedure Initialize (Session : in out Data; Settings : in not null Storage.Context_Handle) is

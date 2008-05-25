@@ -6,7 +6,9 @@ with Solid.Strings;
 use Solid.Strings;
 
 package body Solid.Web.Session.Files is
-   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last)
+   function Initialize (Path     : String;
+                        Name     : String                   := "Session";
+                        Lifetime : Storage.Storage_Lifetime := Storage.Storage_Lifetime'Last)
    return Storage.Context_Handle is
       Result : Storage.Context_Handle := new Context;
    begin -- Initialize

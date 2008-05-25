@@ -104,9 +104,13 @@ package Solid.Web.Request is
    function Payload (Object : Data) return Ada.Streams.Stream_Element_Array;
    -- Returns the payload.
 
-   function Session (Object : Data) return Web.Session.Data;
+   function Session (Object : Data) return Web.Session.Handle;
+   -- Returns the handle to the session information, if one exists.
+   -- Returns Web.Session.No_Session if no session exists.
 
    procedure New_Session (Object : in Data; Session : out Web.Session.Data; Headers : in out Web.Headers.List);
+   -- Creates a new session information object in Session, using the information in Object.
+   -- Sets a cookie in Headers.  Headers must be passed with the response so the browser receives the cookie.
 private -- Solid.Web.Request
    type Data is new Ada.Finalization.Controlled with record
       Created            : Ada.Calendar.Time;

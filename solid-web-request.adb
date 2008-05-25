@@ -6,6 +6,8 @@ with Solid.Text_Streams;
 
 use Solid.Strings;
 
+with Ada.Text_IO;
+
 package body Solid.Web.Request is
    procedure Validate_Environment (Object : in Data) is
       use type Web.Environment.Handle;
@@ -205,12 +207,16 @@ package body Solid.Web.Request is
       end;
    end Session;
 
-   function Session (Object : Data) return Web.Session.Data is
+   function Session (Object : Data) return Web.Session.Handle is
    begin -- Session
       if not Session (Object) then
-         return No_Session : Web.Session.Data do
-            null; -- An invalid session.
-         end return;
+         Ada.Text_IO.Put_Line (Ada.Text_IO.Current_Error, "not Session (Object)");
+         return Web.Session.No_Session;
+         -------------------------------------------
+         -- Once FSF GNAT supports extended return statements, Web.Session.Data can be directly returned.
+         --~ return No_Session : Web.Session.Data do
+            --~ null; -- An invalid session.
+         --~ end return;
       end if;
 
       Read_Session : declare
@@ -220,11 +226,17 @@ package body Solid.Web.Request is
          return Web.Session.Read (From => Object.Session_Context, Identity => Cookies.Get (Name => Session_Name) );
       exception -- Read_Session
          when Web.Session.Not_Found =>
+            Ada.Text_IO.Put_Line (Ada.Text_IO.Current_Error, "Not_Found");
+            -- In the case where a session cookie is found, but no data is found.
             -- If this were a procedure, we could remove the cookie from the data,
             -- so an appropriate check could be made in New_Session.
-            return No_Session : Web.Session.Data do
-               null; -- An invalid session.
-            end return;
+
+            return Web.Session.No_Session;
+            -------------------------------------------
+            -- Once FSF GNAT supports extended return statements, Web.Session.Data can be directly returned.
+            --~ return No_Session : Web.Session.Data do
+               --~ null; -- An invalid session.
+            --~ end return;
       end Read_Session;
    end Session;
 

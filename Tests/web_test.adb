@@ -33,13 +33,14 @@ procedure Web_Test is
    end Cookie_Test;
 
    function Session_Test (Client : Request.Data) return Response.Data is
-      Session : Solid.Web.Session.Data := Request.Session (Client);
+      Session : Solid.Web.Session.Handle := Request.Session (Client);
       Headers : Solid.Web.Headers.List;
 
-      use type Solid.Web.Session.Data;
+      use type Solid.Web.Session.Handle;
    begin -- Session_Test
-      if not Solid.Web.Session.Valid (Session) then
-         Request.New_Session (Client, Session => Session, Headers => Headers);
+      if Session = Solid.Web.Session.No_Session then
+         Session := new Solid.Web.Session.Data;
+         Request.New_Session (Client, Session => Session.all, Headers => Headers);
          return Response.Build ("text/plain", Message_Body => "No session exists, so one was created.", Headers => Headers);
       else
          --return Response.Build ("text/plain", Message_Body => "A session exists.");
@@ -55,7 +56,7 @@ procedure Web_Test is
 
    procedure Cookies is new Solid.Web.Standard.Program (Process => Cookie_Test, Session_Context => Context);
 begin -- Web_Test
-   -- Test;
+   --Test;
    Sessions;
 
    --Cookies;

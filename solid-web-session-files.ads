@@ -6,7 +6,9 @@ private with Solid.Calendar;
 package Solid.Web.Session.Files is
    type Context is new Storage.Context with private;
 
-   function Initialize (Path : String; Name : String := "Session"; Lifetime : Duration := Duration'Last)
+   function Initialize (Path     : String;
+                        Name     : String                   := "Session";
+                        Lifetime : Storage.Storage_Lifetime := Storage.Storage_Lifetime'Last)
    return Storage.Context_Handle;
 
    procedure Set_Path (Settings : in out Context'Class; To : in String);

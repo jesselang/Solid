@@ -2,7 +2,7 @@
 -- See Solid.Web.Session.Files for a basic storage method suitable for "standard" low-volume web applications.
 private with Ada.Containers.Indefinite_Hashed_Sets;
 private with GNAT.MD5;
-private with PragmARC.Binary_Semaphore_Handler;
+with PragmARC.Binary_Semaphore_Handler; -- Should be "private with", but older versions of GNAT have problems with this.
 private with Solid.Calendar;
 with Ada.Calendar;
 with Ada.Finalization;
@@ -13,6 +13,11 @@ package Solid.Web.Session is
    type Data is limited private;
    -- The session data stores a client's set of data, based on a unique identity.
    -- Any data type may be stored in the session.  See Solid.CGI.Session.[Generic_]Tuples.
+
+   type Handle is access Data;
+   -- Clients should use a Handle to Data.
+   -- Once FSF GNAT supports extended return statements, clients can use Data directly without needing a Handle.
+   -- Deallocation of Data is the client's responsibility.
 
    function Valid (Session : Data) return Boolean;
 
@@ -49,7 +54,7 @@ package Solid.Web.Session is
    -- Deletes the tuple with Key in Session.
    -- Raises Not_Found if not Exists (Session, Key).
 
-   -- For commonly-used tuple operations, see Solid.CGI.Session.Tuples.
+   -- For commonly-used tuple operations, see Solid.Web.Session.Tuples.
 
    Invalid_Context : exception;
 
@@ -62,7 +67,11 @@ package Solid.Web.Session is
 
       No_Context : constant Context_Handle;
 
-      procedure Initialize (Settings : in out Context_Handle; Name : String := "Session"; Lifetime : Duration := Duration'Last);
+      subtype Storage_Lifetime is Duration range 0.0 .. 31_536_000.0; -- approximately 1 year, a good long time.
+
+      procedure Initialize (Settings : in out Context_Handle;
+                            Name     : in     String           := "Session";
+                            Lifetime : in     Storage_Lifetime := Storage_Lifetime'Last);
       -- Initializes the session context in Settings, setting the session name to Name.
       -- See the Initialize procedure for the extension you are using, it is often more appropriate.
       -- Raises Invalid_Context if the context could not be initialized.
@@ -79,7 +88,7 @@ package Solid.Web.Session is
       procedure Set_Lifetime (Settings : in out Context'Class; To : in Duration);
       -- Sets the lifetime for session data objects created using Settings.
 
-      generic
+      generic -- Safe_Process
          with procedure Process;
       procedure Safe_Process (Settings : in out Context'Class);
       -- Executes Process with exclusive access to Settings.  Used only by operations in the parent package.
@@ -88,6 +97,9 @@ package Solid.Web.Session is
       -- Operations invoked by this package, which must be overriden to create new session storage schemes.
       procedure Initialize (Settings : in out Context) is abstract;
       -- Performs any initialization steps such that Settings can be considered valid (ready for use).
+      -- Raises Invalid_Context if initialization fails.
+
+      -- The following abstract operations should assume that Settings is valid.
 
       procedure Finalize (Settings : in out Context) is abstract;
       -- Performs any finalization steps once Settings is no longer needed.  This could become an operation
@@ -125,16 +137,20 @@ package Solid.Web.Session is
 
    procedure Create (Settings : not null Storage.Context_Handle; Session : out Data);
 
-   function Create (Settings : not null Storage.Context_Handle) return Data;
+   function Create (Settings : not null Storage.Context_Handle) return Handle;
    -- Returns a new session data associated with the session context in Settings.
    -- Raises Invalid_Context if not Valid (Settings).
+   -- Once FSF GNAT supports extended return statements, this operation will likely change to return Data.
+
+   No_Session : constant Handle;
 
    Expired : exception;
 
-   function Read (From : not null Storage.Context_Handle; Identity : String) return Data;
+   function Read (From : not null Storage.Context_Handle; Identity : String) return Handle;
    -- Reads session data from the context From with Identity, and assigns the session to To.
    -- Raises Not_Found if the session could not be found.
    -- Raises Expired if the session expired its lifetime.
+   -- Once FSF GNAT supports extended return statements, this operation will likely change to return Data.
 
    -- Stream I/O operations, used by storage implementations to read/write session data.
    procedure Input (Stream : not null access Ada.Streams.Root_Stream_Type'Class; Item : out Data);
@@ -175,5 +191,6 @@ private -- Solid.Web.Session
    -- Sets Item for Session.
    -- To be used by instantiations of the Tuples package.
 
-   No_Session : constant Data := (Ada.Finalization.Limited_Controlled with others => <>);
+   --~ No_Session : constant Data   := (Ada.Finalization.Limited_Controlled with others => <>);
+   No_Session : constant Handle := null;
 end Solid.Web.Session;
