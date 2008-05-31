@@ -4,6 +4,24 @@ with Interfaces.C.Strings;
 package body Solid.Interfaces.Libraries is
    package C renames Standard.Interfaces.C;
 
+   function Error return String;
+   -- Returns the last error from dlopen, dlclose, and dlsym.
+
+   function Error return String is
+      function dlerror return C.Strings.chars_ptr;
+      pragma Import (C, dlerror);
+
+      Error_String : constant C.Strings.chars_ptr := dlerror;
+
+      use type C.Strings.chars_ptr;
+   begin -- Error
+      if Error_String = C.Strings.Null_Ptr then
+         return "";
+      end if;
+
+      return C.Strings.Value (Error_String);
+   end Error;
+
    function Load (Path : String) return Handle is
       function dlopen (filename : C.Strings.chars_ptr; flag : C.int) return Handle;
       pragma Import (C, dlopen);
@@ -44,7 +62,7 @@ package body Solid.Interfaces.Libraries is
       Location := dlsym (Library, symbol => C.Strings.New_String (Name) );
 
       if Location = System.Null_Address then
-         raise Not_Found with "Could not find symbol " & '"' & Name & '"';
+         raise Not_Found with "Could not find symbol " & '"' & Name & '"' & " [" & Error & ']';
       end if;
 
       Implementation := Convert (Location);
@@ -62,7 +80,7 @@ package body Solid.Interfaces.Libraries is
       Location := dlsym (Library, symbol => C.Strings.New_String (Name) );
 
       if Location = System.Null_Address then
-         raise Not_Found with "Could not find symbol " & '"' & Name & '"';
+         raise Not_Found with "Could not find symbol " & '"' & Name & '"' & " [" & Error & ']';
       end if;
 
       return Convert (Location);
