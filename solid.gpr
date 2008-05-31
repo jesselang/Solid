@@ -18,6 +18,7 @@ project Solid is
        "solid-debug-analyzer.adb",
        "solid-interfaces.ads",
        "solid-interfaces-bitwise_enumerations.adb",
+       "solid-interfaces-libraries.adb",
        "solid-interrupt_handling.adb",
        "solid-net.ads",
 --       "solid-net-iax.ads",
