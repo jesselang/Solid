@@ -5,7 +5,7 @@ package Solid.Audio.Jack is
    type Client is limited private;
 
    Client_Error : exception;
-   -- All operations may raise Client_Error.
+   -- The following operations may raise Client_Error.
 
    procedure Open (Connection : out Client; Name : in String; Server : in String := "");
    -- Opens a Connection with Name.
