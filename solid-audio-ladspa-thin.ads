@@ -59,9 +59,9 @@ package Solid.Audio.Ladspa.Thin is
        -- Use length-based operations only.
        -- This is not a valid terminator.
 
-   type LADSPADescriptor;
+   type LADSPA_Descriptor;
 
-   type Instantiate_Function is access function (Descriptor : LADSPADescriptor; SampleRate : C.unsigned_long)
+   type Instantiate_Function is access function (Descriptor : LADSPA_Descriptor; SampleRate : C.unsigned_long)
    return LADSPA_Handle;
    pragma Convention (C, Instantiate_Function);
 
@@ -78,8 +78,8 @@ package Solid.Audio.Ladspa.Thin is
 
    type Run_Gain_Procedure is access procedure (Instance : in out LADSPA_Handle; Gain : in LADSPA_Control_Data);
 
-   type LADSPADescriptor is record
-      UniqueID            : C.unsigned_long;
+   type LADSPA_Descriptor is record
+      UniqueID            : Ladspa.Plugin_ID;
       Label               : chars_ptr;
       Properties          : LADSPA_Properties;
       Name                : chars_ptr;
@@ -100,6 +100,12 @@ package Solid.Audio.Ladspa.Thin is
       deactivate          : Instance_Procedure;
       cleanup             : Instance_Procedure;
    end record;
+
+   type LADSPA_Descriptor_Handle is access LADSPA_Descriptor;
+
+   No_Descriptor : constant LADSPA_Descriptor_Handle := null;
+
+   type LADSPA_Descriptor_Function is access function (Index : Ladspa.Plugin_Index) return LADSPA_Descriptor_Handle;
 
    -- Enumerations.
    type LADSPA_Properties_List is (Realtime, Inplace_Broken, Hard_RT_Capable);

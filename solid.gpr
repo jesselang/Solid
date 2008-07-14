@@ -10,6 +10,7 @@ project Solid is
        "solid-audio-jack-thin.ads",
        "solid-audio-jack-thread.adb",
        "solid-audio-ladspa.ads",
+       "solid-audio-ladspa-host.adb",
        "solid-audio-ladspa-thin.ads",
        "solid-calendar.ads",
        "solid-data_structures.ads",
