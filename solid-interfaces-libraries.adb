@@ -2,6 +2,7 @@ with Ada.Unchecked_Conversion;
 with Interfaces.C.Strings;
 
 package body Solid.Interfaces.Libraries is
+   pragma Linker_Options ("-ldl");
    package C renames Standard.Interfaces.C;
 
    function Error return String;
