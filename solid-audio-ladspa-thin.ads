@@ -3,12 +3,12 @@ with Interfaces.C.Pointers;
 with Interfaces.C.Strings;
 
 package Solid.Audio.Ladspa.Thin is
-   subtype LADSPA_Data is Audio.Sample;
+   subtype LADSPA_Audio_Data is Audio.Sample;
 
    package C renames Interfaces.C;
-   -- Consider creating:
-   type LADSPA_Control_Data is new C.C_Float;
-   type LADSPA_Control_Handle is access LADSPA_Control_Data;
+
+   subtype LADSPA_Control_Data is Control_Value;
+   type LADSPA_Control_Handle is access all LADSPA_Control_Data;
 
    -- The following are C.int actually, but we need a modular type for bitwise operations.
    type LADSPA_Properties is new C.unsigned;
@@ -29,9 +29,11 @@ package Solid.Audio.Ladspa.Thin is
 
    subtype chars_ptr is C.Strings.chars_ptr;
 
-   type PortDescriptor_List is array (C.size_t range <>) of aliased LADSPA_PortDescriptor;
+   type Port_Index is new C.unsigned_long;
+
+   type PortDescriptor_List is array (Port_Index range <>) of aliased LADSPA_PortDescriptor;
    package PortDescriptor_Lists is new C.Pointers
-      (Index              => C.size_t,
+      (Index              => Port_Index,
        Element            => LADSPA_PortDescriptor,
        Element_Array      => PortDescriptor_List,
        Default_Terminator => LADSPA_PortDescriptor'First);
@@ -39,9 +41,9 @@ package Solid.Audio.Ladspa.Thin is
        -- Use length-based operations only.
        -- This is not a valid terminator.
 
-   type PortName_List is array (C.size_t range <>) of aliased chars_ptr;
+   type PortName_List is array (Port_Index range <>) of aliased chars_ptr;
    package PortName_Lists is new C.Pointers
-      (Index              => C.size_t,
+      (Index              => Port_Index,
        Element            => chars_ptr,
        Element_Array      => PortName_List,
        Default_Terminator => C.Strings.Null_Ptr);
@@ -49,9 +51,9 @@ package Solid.Audio.Ladspa.Thin is
        -- Use length-based operations only.
        -- This is not a valid terminator.
 
-   type PortRangeHint_List is array (C.size_t range <>) of aliased LADSPA_PortRangeHint;
+   type PortRangeHint_List is array (Port_Index range <>) of aliased LADSPA_PortRangeHint;
    package PortRangeHint_Lists is new C.Pointers
-      (Index              => C.size_t,
+      (Index              => Port_Index,
        Element            => LADSPA_PortRangeHint,
        Element_Array      => PortRangeHint_List,
        Default_Terminator => No_PortRangeHint);
@@ -60,8 +62,11 @@ package Solid.Audio.Ladspa.Thin is
        -- This is not a valid terminator.
 
    type LADSPA_Descriptor;
+   type LADSPA_Descriptor_Handle is access LADSPA_Descriptor;
 
-   type Instantiate_Function is access function (Descriptor : LADSPA_Descriptor; SampleRate : C.unsigned_long)
+   No_Descriptor : constant LADSPA_Descriptor_Handle := null;
+
+   type Instantiate_Function is access function (Descriptor : LADSPA_Descriptor_Handle; SampleRate : C.unsigned_long)
    return LADSPA_Handle;
    pragma Convention (C, Instantiate_Function);
 
@@ -71,7 +76,7 @@ package Solid.Audio.Ladspa.Thin is
    -- Consider a port index/number/ID type.
 
    type Connect_Port_Procedure is access procedure (Instance     : in out LADSPA_Handle;
-                                                    Port         : in     C.unsigned_long;
+                                                    Port         : in     Port_Index;
                                                     DataLocation : in     LADSPA_Control_Handle);
 
    type Run_Procedure is access procedure (Instance : in out LADSPA_Handle; SampleCount : in C.unsigned_long);
@@ -85,7 +90,7 @@ package Solid.Audio.Ladspa.Thin is
       Name                : chars_ptr;
       Maker               : chars_ptr;
       Copyright           : chars_ptr;
-      PortCount           : C.unsigned_long;
+      PortCount           : Port_Index;
       PortDescriptors     : PortDescriptor_Lists.Pointer;
       PortNames           : PortName_Lists.Pointer;
       PortRangeHints      : PortRangeHint_Lists.Pointer;
@@ -100,10 +105,6 @@ package Solid.Audio.Ladspa.Thin is
       deactivate          : Instance_Procedure;
       cleanup             : Instance_Procedure;
    end record;
-
-   type LADSPA_Descriptor_Handle is access LADSPA_Descriptor;
-
-   No_Descriptor : constant LADSPA_Descriptor_Handle := null;
 
    type LADSPA_Descriptor_Function is access function (Index : Ladspa.Plugin_Index) return LADSPA_Descriptor_Handle;
 
