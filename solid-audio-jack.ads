@@ -14,7 +14,7 @@ package Solid.Audio.Jack is
    -- Closes the Connection.
 
    -- Activate and deactivate are not used.
-   -- Client is activated when opened.
+   -- Client is activated when Register is first used.
 
    type Audio_Processor is access procedure (Input : in Sample_Buffer; Output : out Sample_Buffer);
 

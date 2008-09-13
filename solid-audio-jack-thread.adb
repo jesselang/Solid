@@ -30,7 +30,7 @@ package body Solid.Audio.Jack.Thread is
       E069 : Boolean; pragma Import (Ada, E069, "system__file_io_E");
       E055 : Boolean; pragma Import (Ada, E055, "ada__text_io_E");
       E087 : Boolean; pragma Import (Ada, E087, "solid__audio_E");
-      E085 : Boolean; pragma Import (Ada, E085, "jack_process_E");
+--      E085 : Boolean; pragma Import (Ada, E085, "jack_process_E");
       E094 : Boolean; pragma Import (Ada, E094, "solid__audio__jack_E");
       E100 : Boolean; pragma Import (Ada, E100, "solid__audio__jack__thread_E");
       E098 : Boolean; pragma Import (Ada, E098, "solid__interfaces__bitwise_enumerations_E");
@@ -178,7 +178,7 @@ package body Solid.Audio.Jack.Thread is
       Solid.Audio'Elab_Spec;
       E087 := True;
       Solid.Audio.Jack'Elab_Spec;
-      E085 := True;
+--      E085 := True;
       E100 := True;
       E098 := True;
       Solid.Audio.Jack.Thin'Elab_Spec;

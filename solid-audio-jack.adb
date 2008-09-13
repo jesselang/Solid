@@ -236,7 +236,10 @@ package body Solid.Audio.Jack is
             if Processes (Index) /= No_Process then
                Input_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Input, nframes => nframes);
                Output_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Output, nframes => nframes);
-               Output_Buffer := Buffers.Value (Input_Handle, Length => Buffer_Length);
+
+               Output_Buffer := Buffers.Value (Input_Handle, Length => Buffer_Length);  -- Does this copy the input buffer to the output buffer by default?
+                                                                                        -- Should it be silence instead?
+
                Processes (Index).Process (Input  => Buffers.Value (Input_Handle, Length => Buffer_Length),
                                           Output => Output_Buffer);
                Write (Buffer => Output_Buffer, To => Output_Handle);
