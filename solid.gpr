@@ -5,6 +5,7 @@ project Solid is
    for Source_Files use
       ("solid.ads",
        "solid-audio.ads",
+       "solid-audio-analysis.ads",
        "solid-audio-energy.adb",
        "solid-audio-jack.adb",
        "solid-audio-jack-thin.ads",
