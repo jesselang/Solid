@@ -4,12 +4,15 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 with Ada.Directories;
 with Ada.Strings.Unbounded.Hash;
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;
 with PragmARC.Images;
 with Solid.Audio.Ladspa.Thin;
+-- with Solid.Interfaces.Bitwise_Enumerations;
 with Solid.Interfaces.Libraries;
 with Solid.Strings;
+with System;
 
 with Ada.Text_IO;
 
@@ -19,27 +22,31 @@ package body Solid.Audio.Ladspa.Host is
       Name  : Strings.U_String;
       Index : Plugin_Index;
    end record;
-
-   function Hash (Key : Library_Key) return Ada.Containers.Hash_Type;
-   function Equivalent_Keys (Left : Library_Key; Right : Library_Key) return Boolean;
+   -- Library_Key represents a specific plugin found at Index with a specific library file found at Path and Name.
+   -- Plugins are loaded using this key, which is usually found by a map lookup on a unique identifier, such as
+   -- the plugin's ID or label.
 
    type Library_Info is record
       Handle     : Solid.Interfaces.Libraries.Handle;
       Descriptor : Thin.LADSPA_Descriptor_Function;
    end record;
+   -- Library_Info contains a LADSPA library file's resources.
 
+   function Hash (Key : Library_Key) return Ada.Containers.Hash_Type;
+   function Equivalent_Keys (Left : Library_Key; Right : Library_Key) return Boolean;
    use type Solid.Interfaces.Libraries.Handle;
    package Library_Maps is new Ada.Containers.Hashed_Maps (Key_Type        => Library_Key,
                                                            Element_Type    => Library_Info,
                                                            Hash            => Hash,
                                                            Equivalent_Keys => Equivalent_Keys);
 
-   -- Library file management
+   -- Library file management.
    Library_Not_Found  : exception;
    Library_Not_LADSPA : exception;
 
    protected Library_Manager is
       procedure Open (Library : in Library_Key; Descriptor : out Thin.LADSPA_Descriptor_Handle);
+      -- Sets Descriptor for the plugin identified by Library.  Opens the library file if needed.
       -- Raises Library_Not_Found if Library could not be found.
       -- Raises Library_Not_LADSPA if Library does not appear to be a LADSPA library.
       -- Descriptor will be Thin.No_Descriptor if no plugin descriptor is found at Library.Index.
@@ -49,13 +56,14 @@ package body Solid.Audio.Ladspa.Host is
       Open_Libraries : Library_Maps.Map;
    end Library_Manager;
 
-   -- Plugin indexes:
+   -- Three plugin indices are kept.  The first two identify plugins using unique IDs and labels.
+   -- The third index contains information about the plugins.
+   -- Key              Element
    -- Plugin ID     -> Library_Key
    -- Plugin Label  -> Library_Key
    -- Library_Key   -> Plugin_Information
 
    function "<" (Left : Library_Key; Right : Library_Key) return Boolean;
-
    package ID_Maps is new Ada.Containers.Ordered_Maps      (Key_Type     => Plugin_ID,
                                                             Element_Type => Library_Key);
    package Label_Maps is new Ada.Containers.Ordered_Maps   (Key_Type     => Strings.U_String,
@@ -73,17 +81,18 @@ package body Solid.Audio.Ladspa.Host is
    package Plugin_Maps is new Ada.Containers.Ordered_Maps (Key_Type        => Library_Key,
                                                            Element_Type    => Plugin_Details);
 
+   -- The plugin indices, as mentioned above.
    Plugin_IDs    : ID_Maps.Map;
    Plugin_Labels : Label_Maps.Map;
    Plugin_Info   : Plugin_Maps.Map;
 
-   Initialized : Boolean := False;
+   Initialized : Boolean := False; -- Stores whether the package was initialized.
 
    package String_List is new Ada.Containers.Vectors (Index_Type   => Positive,
                                                       Element_Type => Strings.U_String,
                                                       "="          => Strings."=");
 
-   Warning_List : String_List.Vector;
+   Warning_List : String_List.Vector; -- If requested, Warnings are appended to this vector during initialization.
 
    package C renames Standard.Interfaces.C;
 
@@ -155,7 +164,9 @@ package body Solid.Audio.Ladspa.Host is
                   elsif Name (Name'Last - Library_Suffix'Length + 1 .. Name'Last) = Library_Suffix then
                      Process (Library => Name);
                   else
-                     Warning_List.Append (New_Item => +("Warning: " & Name & " does not appear to be a library.") );
+                     if Warnings then
+                        Warning_List.Append (New_Item => +("Warning: " & Name & " does not appear to be a library.") );
+                     end if;
                   end if;
                end;
             end loop Each_Search_Entry;
@@ -208,7 +219,9 @@ package body Solid.Audio.Ladspa.Host is
                Plugin_IDs.Insert (Key => Plugin.UniqueID, New_Item => Key);
             exception -- Plugin_ID
                when Constraint_Error =>
-                  Warning_List.Append (New_Item => +("Warning: duplicate plugin ID " & Image (Plugin.UniqueID) ) );
+                  if Warnings then
+                     Warning_List.Append (New_Item => +("Warning: duplicate plugin ID " & Image (Plugin.UniqueID) ) );
+                  end if;
             end Plugin_ID;
 
             Plugin_Label : declare
@@ -229,29 +242,45 @@ package body Solid.Audio.Ladspa.Host is
                end Plugin_Information;
             exception -- Plugin_Label
                when Constraint_Error =>
-                  Warning_List.Append (New_Item => +("Warning: duplicate plugin label " & Label) );
+                  if Warnings then
+                     Warning_List.Append (New_Item => +("Warning: duplicate plugin label " & Label) );
+                  end if;
             end Plugin_Label;
          end loop All_Plugins;
+
+         Library_Manager.Close (Library => Key);
       exception -- Register_Plugins
          when Library_Not_Found =>
-            Warning_List.Append (New_Item => +("Warning: " & Library & " could not be found.") );
+            if Warnings then
+               Warning_List.Append (New_Item => +("Warning: " & Library & " could not be found.") );
+            end if;
          when Library_Not_LADSPA =>
-            Warning_List.Append (New_Item => +("Warning: " & Library & " does not appear to be a LADSPA library file.") );
+            if Warnings then
+               Warning_List.Append (New_Item => +("Warning: " & Library & " does not appear to be a LADSPA library file.") );
+            end if;
       end Register_Plugins;
+
+      use type Ada.Containers.Count_Type;
    begin -- Initialize
+      Plugin_IDs.Clear;
+      Plugin_Labels.Clear;
+      Plugin_Info.Clear;
+
+      Warning_List.Clear;
+
       Register_Libraries (Search_Path => Plugin_Path);
+
+      Warnings := Warnings and then Warning_List.Length > 0;
 
       Initialized := True;
    end Initialize;
 
-   function Warnings return Strings.String_Array is
-      Result : Strings.String_Array (1 .. Natural (Warning_List.Length) );
+   procedure Warnings is
+      function "+" (Left : Strings.U_String) return String renames Strings."+";
    begin -- Warnings
-      for Index in Warning_List.First_Index .. Warning_List.Last_Index loop
-         Result (Index) := Warning_List.Element (Index);
+      for Index in String_List.First_Index (Warning_List) .. String_List.Last_Index (Warning_List) loop
+         Process (Message => +Warning_List.Element (Index) );
       end loop;
-
-      return Result;
    end Warnings;
 
    procedure Available_Plugins (Order : in Plugin_Order := Library) is
@@ -341,9 +370,14 @@ package body Solid.Audio.Ladspa.Host is
       Position : ID_Maps.Cursor;
 
       use type ID_Maps.Cursor;
+      use type Thin.LADSPA_Descriptor_Handle;
    begin -- Create
       if not Initialized then
          raise Not_Initialized;
+      end if;
+
+      if P.State in Instantiated .. Deactivated then
+         raise Invalid_State;
       end if;
 
       Position := Plugin_IDs.Find (ID);
@@ -354,51 +388,156 @@ package body Solid.Audio.Ladspa.Host is
 
       Library_Manager.Open (Library => ID_Maps.Element (Position), Descriptor => P.Descriptor);
 
+      if P.Descriptor = Thin.No_Descriptor then
+         raise Plugin_Not_Found;
+      end if;
+
+      Instantiate (P, Rate => Rate);
+      P.Rate  := Rate;
+      P.State := Instantiated;
+
+      Create_Ports (P);
+      P.State := Connected;
    exception -- Create
       when Library_Not_Found | Library_Not_LADSPA =>
          raise Plugin_Not_Found;
    end Create;
 
    procedure Create (P : in out Plugin; Rate : in Sample_Rate; Label : in String) is
+      Position : Label_Maps.Cursor;
+
+      use type Label_Maps.Cursor;
+      use type Thin.LADSPA_Descriptor_Handle;
    begin -- Create
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      null;
+      if P.State in Instantiated .. Deactivated then
+         raise Invalid_State;
+      end if;
+
+      Position := Plugin_Labels.Find (+Label);
+
+      if Position = Label_Maps.No_Element then
+         raise Plugin_Not_Found;
+      end if;
+
+      Library_Manager.Open (Library => Label_Maps.Element (Position), Descriptor => P.Descriptor);
+
+      if P.Descriptor = Thin.No_Descriptor then
+         raise Plugin_Not_Found;
+      end if;
+
+      Instantiate (P, Rate => Rate);
+      P.Rate  := Rate;
+      P.State := Instantiated;
+
+      Create_Ports (P);
+      P.State := Connected;
+   exception -- Create
+      when Library_Not_Found | Library_Not_LADSPA =>
+         raise Plugin_Not_Found;
    end Create;
 
+   function Have_Property (P : Plugin; Property : Plugin_Property) return Boolean is
+   begin -- Have_Property
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      -- Check state.
+
+      return False;
+   end Have_Property;
+
    procedure Activate (P : in out Plugin) is
+      use type Thin.Instance_Procedure;
    begin -- Activate
-      null;
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      --~ if Audio_Port (P.Ports (1).all).Handle = null or Audio_Port (P.Ports (9).all).Handle = null then
+         --~ raise Program_Error;
+      --~ end if;
+
+      -- Check state.
+      if P.Descriptor.Activate /= null then
+         P.Descriptor.Activate (Instance => P.Instance);
+      end if;
+
+      P.State := Activated;
    end Activate;
 
    procedure Deactivate (P : in out Plugin) is
+      use type Thin.Instance_Procedure;
    begin -- Deactivate
-      null;
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      -- Check state.
+      if P.Descriptor.Deactivate /= null then
+         P.Descriptor.Deactivate (Instance => P.Instance);
+      end if;
+
+      P.State := Deactivated;
    end Deactivate;
 
-   procedure Run (P : in out Plugin; Samples : in Buffer_Size) is
+   procedure Run (P : in out Plugin; Sample_Count : in Buffer_Size) is
+      Count : constant C.unsigned_long := C.unsigned_long (Sample_Count);
    begin -- Run
-      null;
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      -- Check state.
+
+      P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
+      P.State := Running;
+
+      --~ if P.State = Activated then
+         --~ P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
+         --~ P.State := Running;
+      --~ elsif P.State = Running then
+         --~ P.Descriptor.Run_Adding (Instance => P.Instance, SampleCount => Count);
+      --~ else
+         --~ raise Invalid_State;
+      --~ end if;
    end Run;
 
-   function Name (Port : Plugin_Port) return String is
+   procedure Cleanup (P : in out Plugin) is
+   begin -- Cleanup
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      -- Deactivate if needed.
+
+      -- Cleanup plugin.
+
+      -- Deallocate the ports.
+      P.State := Finalized;
+   end Cleanup;
+
+   function Name (Port : Plugin_Port'Class) return String is
+      function "+" (Left : Strings.U_String) return String renames Strings."+";
    begin -- Name
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      return "";
+      return +Port.Name;
    end Name;
 
-   function Direction (Port : Plugin_Port) return Port_Direction is
+   function Direction (Port : Plugin_Port'Class) return Port_Direction is
    begin -- Direction
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      return Input;
+      return Port.Direction;
    end Direction;
 
    function Ports (P : Plugin) return Port_Array is
@@ -407,38 +546,92 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      if P.Ports = null then
-         null; -- raise something
+      if P.State not in Connected .. Deactivated then
+         return (1 .. 0 => <>);
       end if;
 
       return P.Ports.all;
    end Ports;
 
-   procedure Connect (Port : in out Audio_Port; Buffer : in Buffer_Handle) is
+   procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in Buffer_Handle) is
+      function Convert is new Ada.Unchecked_Conversion (Source => Audio.Buffer_Pointer, Target => Thin.LADSPA_Control_Handle);
+
+      Instance   : Plugin_Handle := P.Instance;
+      Index     : Thin.Port_Index := Port.Index;
+      Address   : System.Address := Buffer (Buffer'First)'Address;
+
+      use type Thin.Connect_Port_Procedure;
+      use Solid.Strings;
    begin -- Connect
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      null;
+      Port.Handle := Buffer;
+
+      if P.Descriptor.Connect_Port = null then
+         raise Program_Error;
+      else
+         Ada.Text_IO.Put_Line ("Connect - Pre: Connect_Port is not null");
+      end if;
+
+      if P.Instance = null then
+         raise Program_Error;
+      end if;
+
+      Ada.Text_IO.Put_Line (Port.Index'Img & " - " & (+Port.Name) );
+
+      --~ P.Descriptor.Connect_Port
+         --~ (Instance     => Instance,
+          --~ Port         => Port.Index,
+          --~ DataLocation => Port.Handle (Port.Handle'First)'Address);
+      --~ P.Descriptor.Connect_Port
+         --~ (Instance     => Instance,
+          --~ Port         => Index,
+          --~ DataLocation => Address);
+
+      if Instance = null then
+         raise Program_Error;
+      end if;
+
+      if P.Instance = null then
+         raise Program_Error;
+      end if;
+
+      if P.Descriptor.Connect_Port = null then
+         raise Program_Error;
+      else
+         Ada.Text_IO.Put_Line ("Connect - Post: Connect_Port is not null");
+      end if;
    end Connect;
 
-   procedure Set_Default (Control : in out Control_Port) is
+   function Take_Hint (Control : Control_Port'Class; Hint : Port_Hint) return Boolean is
+   begin -- Take_Hint
+      if not Initialized then
+         raise Not_Initialized;
+      end if;
+
+      return Control.Hints (Hint);
+   end Take_Hint;
+
+   procedure Set_Default (Control : in out Control_Port'Class) is
    begin -- Set_Default
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      null;
+      -- Check bounds?
+
+      Control.Value := Control.Default;
    end Set_Default;
 
-   function Get (Control : Normal_Control) return Control_Value is
+   function Get (Control : Control_Port'Class) return Control_Value is
    begin -- Get
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      return 0.0;
+      return Control.Value;
    end Get;
 
    procedure Set (Control : in out Normal_Control; Value : in Control_Value) is
@@ -447,7 +640,11 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      null;
+      if Value not in Control.Lower .. Control.Upper then
+         raise Range_Error;
+      end if;
+
+      Control.Value := Value;
    end Set;
 
    function Enabled (Control : Toggle_Control) return Boolean is
@@ -456,7 +653,7 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      return False;
+      return Control.Value > 0.0;
    end Enabled;
 
    procedure Set (Control : in out Toggle_Control; Enable : in Boolean) is
@@ -465,25 +662,37 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      null;
+      -- Check bounds?
+
+      if Enable then
+         Control.Value := 1.0;
+      else
+         Control.Value := 0.0;
+      end if;
    end Set;
 
-   function Get (Control : Sample_Rate_Control) return Sample_Rate is
+   function Get (Control : Sample_Rate_Control) return Audio.Sample_Rate is
    begin -- Get
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      return 48_000;
+      return Audio.Sample_Rate (Control.Value);
    end Get;
 
-   procedure Set (Control : in out Sample_Rate_Control; Rate : in Sample_Rate) is
+   procedure Set (Control : in out Sample_Rate_Control; Value : in Audio.Sample_Rate) is
+      Control_Rate : constant Control_Value := Control_Value (Control.Rate);
+      New_Value    : constant Control_Value := Control_Value (Value);
    begin -- Set
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      null;
+      if New_Value not in Control.Lower * Control_Rate .. Control.Upper * Control_Rate then
+         raise Range_Error;
+      end if;
+
+      Control.Value := New_Value;
    end Set;
 
    function Get (Control : Integer_Control) return Integer is
@@ -492,16 +701,21 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      return 0;
+      return Integer (Control.Value);
    end Get;
 
    procedure Set (Control : in out Integer_Control; Value : in Integer) is
+      New_Value : constant Control_Value := Control_Value (Value);
    begin -- Set
       if not Initialized then
          raise Not_Initialized;
       end if;
 
-      null;
+      if New_Value not in Control.Lower .. Control.Upper then
+         raise Range_Error;
+      end if;
+
+      Control.Value := New_Value;
    end Set;
 
    protected body Library_Manager is
@@ -605,15 +819,46 @@ package body Solid.Audio.Ladspa.Host is
       end if;
 
       P.Instance := P.Descriptor.instantiate (P.Descriptor, SampleRate => C.unsigned_long (Rate) );
+
+      if P.Instance = null then
+         raise Program_Error;
+      end if;
    end Instantiate;
 
    procedure Create_Ports (P : in out Plugin) is
-      Port_Count  : constant C.ptrdiff_t := C.ptrdiff_t (P.Descriptor.PortCount);
-      Descriptors : constant Thin.PortDescriptor_List := Thin.PortDescriptor_Lists.Value
+      function Direction (D : Thin.LADSPA_PortDescriptor) return Port_Direction;
+      -- Returns the direction of the port described by D.
+      -- Raises Program_Error if an error occurs.
+
+      function Direction (D : Thin.LADSPA_PortDescriptor) return Port_Direction is
+         use type Thin.LADSPA_PortDescriptor;
+      begin -- Direction
+         case D and (Thin.Input or Thin.Output) is
+            when Thin.Input =>
+               return Input;
+            when Thin.Output =>
+               return Output;
+            when others =>
+               raise Program_Error with "Port direction wasn't described.";
+         end case;
+      end Direction;
+
+      Port_Count   : constant C.ptrdiff_t := C.ptrdiff_t (P.Descriptor.PortCount);
+      Descriptors  : constant Thin.PortDescriptor_List := Thin.PortDescriptor_Lists.Value
                                                                            (P.Descriptor.PortDescriptors, Length => Port_Count);
-      Names       : constant Thin.PortName_List       := Thin.PortName_Lists.Value (P.Descriptor.PortNames, Length => Port_Count);
-      Range_Hints : constant Thin.PortRangeHint_List  := Thin.PortRangeHint_Lists.Value
+      Names        : constant Thin.PortName_List       := Thin.PortName_Lists.Value (P.Descriptor.PortNames, Length => Port_Count);
+      Port_Hints   : constant Thin.PortRangeHint_List  := Thin.PortRangeHint_Lists.Value
                                                                            (P.Descriptor.PortRangeHints, Length => Port_Count);
+
+      Port_Index : Thin.Port_Index;
+
+      type Control_Handle is access all Control_Port'Class;
+
+      Control : Control_Handle;
+
+      use type Thin.LADSPA_PortDescriptor;
+      use type Thin.LADSPA_PortRangeHintDescriptor;
+      use type Thin.Connect_Port_Procedure;
    begin -- Create_Ports
       -- Check state?
 
@@ -624,9 +869,99 @@ package body Solid.Audio.Ladspa.Host is
       P.Ports := new Port_Array (1 .. Natural (P.Descriptor.PortCount) );
 
       All_Ports : for Index in P.Ports'Range loop
-         null;
-      end loop All_Ports;
+         Port_Index := Thin.Port_Index (Index - 1);
 
-      null;
+         if (Descriptors (Port_Index) and Thin.Audio) > 0 then
+            P.Ports (Index) := new Audio_Port;
+         elsif (Descriptors (Port_Index) and Thin.Control) > 0 then
+            if (Port_Hints (Port_Index).HintDescriptor and Thin.Toggled) > 0 then
+               P.Ports (Index) := new Toggle_Control;
+            elsif (Port_Hints (Port_Index).HintDescriptor and Thin.Sample_Rate) > 0 then
+               P.Ports (Index) := new Sample_Rate_Control'(Rate => P.Rate, others => <>); -- Rate required for accurate bounding.
+            elsif (Port_Hints (Port_Index).HintDescriptor and Thin.Integer) > 0 then
+               P.Ports (Index) := new Integer_Control;
+            else
+               P.Ports (Index) := new Normal_Control;
+            end if;
+
+            -- Create a control port view of the port.
+            Control := Control_Handle (P.Ports (Index) );
+
+            if P.Descriptor.Connect_Port = null then
+               raise Program_Error;
+            else
+               Ada.Text_IO.Put_Line ("Create_Ports - Pre: Connect_Port is not null");
+            end if;
+
+            -- Connect control port.
+            P.Descriptor.Connect_Port (Instance => P.Instance, Port => Port_Index, DataLocation => Control.Value'Address);
+
+            if P.Descriptor.Connect_Port = null then
+               raise Program_Error;
+            else
+               Ada.Text_IO.Put_Line ("Create_Ports - Post: Connect_Port is not null");
+            end if;
+
+            -- Set the remaining port hints.
+            if (Port_Hints (Port_Index).HintDescriptor and Thin.Logarithmic) > 0 then
+               Control.Hints (Logarithmic) := True;
+            end if;
+
+            -- Set bounds.
+            if (Port_Hints (Port_Index).HintDescriptor and Thin.Bounded_Below) > 0 then
+               Control.Lower := Port_Hints (Port_Index).LowerBound;
+            end if;
+
+            if (Port_Hints (Port_Index).HintDescriptor and Thin.Bounded_Above) > 0 then
+               Control.Upper := Port_Hints (Port_Index).UpperBound;
+            end if;
+
+            -- Set a default value.
+            case (Port_Hints (Port_Index).HintDescriptor and Thin.Default_Mask) is
+               when Thin.Default_None =>
+                  Control.Default := 0.0;
+               when Thin.Default_Minimum =>
+                  Control.Default := Control.Lower;
+               when Thin.Default_Low =>
+                  -- For ports with LADSPA_HINT_LOGARITHMIC, this should be exp(log(lower) * 0.75 + log(upper) * 0.25).
+                  -- Otherwise, this should be (lower * 0.75 + upper * 0.25). */
+
+                  -- TODO --
+                  null;
+               when Thin.Default_Middle =>
+                  -- For ports with LADSPA_HINT_LOGARITHMIC, this should be exp(log(lower) * 0.5 + log(upper) * 0.5).
+                  -- Otherwise, this should be (lower * 0.5 + upper * 0.5).
+
+                  -- TODO --
+                  null;
+               when Thin.Default_High =>
+                  -- For ports with LADSPA_HINT_LOGARITHMIC, this should be exp(log(lower) * 0.25 + log(upper) * 0.75).
+                  -- Otherwise, this should be (lower * 0.25 + upper * 0.75).
+
+                  -- TODO --
+                  null;
+               when Thin.Default_Maximum =>
+                  Control.Default := Control.Upper;
+               when Thin.Default_0 =>
+                  Control.Default := 0.0;
+               when Thin.Default_1 =>
+                  Control.Default := 1.0;
+               when Thin.Default_100 =>
+                  Control.Default := 100.0;
+               when Thin.Default_440 =>
+                  Control.Default := 440.0;
+               when others =>
+                  raise Program_Error with "Port default was not described."; -- This should never happen.
+            end case;
+
+            Set_Default (Control.all);
+         else
+            raise Program_Error with "Port type was not described."; -- This should never happen.
+         end if;
+
+         P.Ports (Index).Index := Port_Index;
+         P.Ports (Index).Direction := Direction (Descriptors (Port_Index) );
+         P.Ports (Index).Name := +C.Strings.Value (Names (Port_Index) );
+      end loop All_Ports;
    end Create_Ports;
 end Solid.Audio.Ladspa.Host;
