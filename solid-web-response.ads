@@ -28,5 +28,5 @@ private -- Solid.Web.Response
       Payload : Strings.U_String;
    end record;
 
-   pragma Assert (Ada.Streams.Stream_Element'Size = 8);
+   pragma Assert (Ada.Streams.Stream_Element'Size = 8); -- -gnata has to be enabled for this assertion to work.
 end Solid.Web.Response;
