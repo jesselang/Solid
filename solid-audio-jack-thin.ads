@@ -124,7 +124,7 @@ private package Solid.Audio.Jack.Thin is
    pragma Import (C, jack_port_name);
    --~ const char *jack_port_name (const jack_port_t *port);
 
-   function jack_port_get_buffer (port : jack_port_t; nframes : jack_nframes_t) return Buffer_Handle;
+   function jack_port_get_buffer (port : jack_port_t; nframes : jack_nframes_t) return Buffer_Pointer;
    pragma Import (C, jack_port_get_buffer);
       -- void *jack_port_get_buffer (jack_port_t *, jack_nframes_t);
 

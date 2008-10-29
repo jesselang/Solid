@@ -207,11 +207,11 @@ package body Solid.Audio.Jack is
    end Silence;
 
    function Process_Audio (nframes : Thin.jack_nframes_t; Context : Thin.void_ptr) return Thin.int is
-      procedure Write (Buffer : in Sample_Buffer; To : in Buffer_Handle);
+      procedure Write (Buffer : in Sample_Buffer; To : in Buffer_Pointer);
       -- Writes Buffer to the handle in To.
 
-      procedure Write (Buffer : in Sample_Buffer; To : in Buffer_Handle) is
-         Location : Buffer_Handle := To;
+      procedure Write (Buffer : in Sample_Buffer; To : in Buffer_Pointer) is
+         Location : Buffer_Pointer := To;
       begin -- Write
          for Index in Buffer'Range loop
             Location.all := Buffer (Index);
@@ -224,8 +224,8 @@ package body Solid.Audio.Jack is
       Processes     : constant Process_Handle         := Process_Conversion.To_Pointer (Context);
       Buffer_Length : constant Interfaces.C.ptrdiff_t := Interfaces.C.ptrdiff_t (nframes);
 
-      Input_Handle  : Buffer_Handle;
-      Output_Handle : Buffer_Handle;
+      Input_Handle  : Buffer_Pointer;
+      Output_Handle : Buffer_Pointer;
       Output_Buffer : Sample_Buffer (1 .. nframes);
 
       use type Process_Handle;
