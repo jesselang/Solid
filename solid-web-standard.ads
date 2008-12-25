@@ -1,5 +1,6 @@
 -- "Standard" CGI support.
 -- The original CGI specification can be found at http://hoohoo.ncsa.uiuc.edu/cgi/
+with Solid.Web.Environment;
 with Solid.Web.Request;
 with Solid.Web.Response;
 with Solid.Web.Session;
@@ -26,4 +27,12 @@ package Solid.Web.Standard is
    -- Get and Post request methods are supported.
    -- If the request method is Post, only basic form data is supported.
    -- Raises Invalid_Gateway if basic sanity checks or program setup fails.
+
+   function Value (Name : Solid.Web.Environment.Variable) return String;
+   -- Get the web environment variable with Name.
+   -- Returns "" (null string) if not found.
+
+   function Value (Name : String) return String;
+   -- Get the web environment variable with Name.
+   -- Returns "" (null string) if not found.
 end Solid.Web.Standard;

@@ -11,7 +11,7 @@ project Solid is
        "solid-audio-jack-thin.ads",
        "solid-audio-jack-thread.adb",
        "solid-audio-ladspa.ads",
-       "solid-audio-ladspa-host.adb",
+--       "solid-audio-ladspa-host.adb",
        "solid-audio-ladspa-thin.ads",
        "solid-calendar.ads",
        "solid-data_structures.ads",
@@ -27,29 +27,10 @@ project Solid is
        "solid-platform.ads",
        "solid-platform-endian.adb",
        "solid-strings.ads",
-       "solid-text_streams.adb",
-       "solid-web.ads",
-       "solid-web-containers.ads",
-       "solid-web-containers-tables.adb",
-       "solid-web-cookies.adb",
-       "solid-web-environment.adb",
-       "solid-web-headers.ads",
-       "solid-web-mime.ads",
-       "solid-web-parameters.adb",
-       "solid-web-request.adb",
-       "solid-web-request-set.adb",
-       "solid-web-response.adb",
-       "solid-web-session.adb",
-       "solid-web-session-files.adb",
-       "solid-web-session-generic_tuples.adb",
-       "solid-web-session-tuples.ads",
-       "solid-web-standard.adb",
-       "solid-web-standard-environment.adb",
-       "solid-web-url.adb");
+       "solid-text_streams.adb");
    package Compiler is
       for Default_Switches ("Ada") use ("-fstack-check");
       for Switches ("solid-audio-jack-thread.adb") use ("");
-      for Switches ("solid-cgi-request.adb") use ("-fstack-check", "-gnata");
    end Compiler;
    package Builder is
       for Default_Switches ("Ada") use ("-m", "-gnato", "-gnat05", "-O1", "-j2");

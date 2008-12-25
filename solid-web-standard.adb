@@ -4,7 +4,7 @@ with Ada.Text_IO.Text_Streams;
 with GNAT.String_Split;
 with Solid.Web.Cookies;
 with Solid.Web.Containers.Tables;
-with Solid.Web.Environment;
+-- with Solid.Web.Environment;
 with Solid.Web.Headers;
 with Solid.Web.MIME;
 with Solid.Web.Parameters;
@@ -170,4 +170,14 @@ package body Solid.Web.Standard is
                                                              Ada.Exceptions.Exception_Message (O) );
          Write_Response (Object => Program_Response);
    end Program;
+
+   function Value (Name : Solid.Web.Environment.Variable) return String is
+   begin -- Value
+      return Web.Environment.Value (Standard.Environment.Current, Name => Name);
+   end Value;
+
+   function Value (Name : String) return String is
+   begin
+      return Web.Environment.Value (Standard.Environment.Current, Name => Name);
+   end Value;
 end Solid.Web.Standard;
