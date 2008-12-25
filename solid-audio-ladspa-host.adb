@@ -493,8 +493,9 @@ package body Solid.Audio.Ladspa.Host is
       end if;
 
       -- Check state.
-
+      Ada.Text_IO.Put_Line ("Run");
       P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
+      Ada.Text_IO.Put_Line ("Fun");
       P.State := Running;
 
       --~ if P.State = Activated then
@@ -554,12 +555,6 @@ package body Solid.Audio.Ladspa.Host is
    end Ports;
 
    procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in Buffer_Handle) is
-      function Convert is new Ada.Unchecked_Conversion (Source => Audio.Buffer_Pointer, Target => Thin.LADSPA_Control_Handle);
-
-      Instance   : Plugin_Handle := P.Instance;
-      Index     : Thin.Port_Index := Port.Index;
-      Address   : System.Address := Buffer (Buffer'First)'Address;
-
       use type Thin.Connect_Port_Procedure;
       use Solid.Strings;
    begin -- Connect
@@ -581,6 +576,8 @@ package body Solid.Audio.Ladspa.Host is
 
       Ada.Text_IO.Put_Line (Port.Index'Img & " - " & (+Port.Name) );
 
+      P.Descriptor.Connect_Port
+         (Instance => P.Instance, Port => Port.Index, DataLocation => Control_Value (Port.Handle (Port.Handle'First) ) );
       --~ P.Descriptor.Connect_Port
          --~ (Instance     => Instance,
           --~ Port         => Port.Index,
@@ -589,10 +586,6 @@ package body Solid.Audio.Ladspa.Host is
          --~ (Instance     => Instance,
           --~ Port         => Index,
           --~ DataLocation => Address);
-
-      if Instance = null then
-         raise Program_Error;
-      end if;
 
       if P.Instance = null then
          raise Program_Error;
@@ -894,7 +887,7 @@ package body Solid.Audio.Ladspa.Host is
             end if;
 
             -- Connect control port.
-            P.Descriptor.Connect_Port (Instance => P.Instance, Port => Port_Index, DataLocation => Control.Value'Address);
+            P.Descriptor.Connect_Port (Instance => P.Instance, Port => Port_Index, DataLocation => Control.Value);
 
             if P.Descriptor.Connect_Port = null then
                raise Program_Error;

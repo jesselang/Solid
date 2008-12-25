@@ -9,8 +9,8 @@ package Solid.Audio.Ladspa.Thin is
    package C renames Interfaces.C;
 
    subtype LADSPA_Control_Data is Control_Value;
-   type LADSPA_Control_Handle is access all LADSPA_Control_Data;
-   pragma Convention (C, LADSPA_Control_Handle);
+   --~ type LADSPA_Control_Handle is access all LADSPA_Control_Data;
+   --~ pragma Convention (C, LADSPA_Control_Handle);
 
    -- The following are C.int actually, but we need a modular type for bitwise operations.
    type LADSPA_Properties is new C.unsigned;
@@ -58,6 +58,7 @@ package Solid.Audio.Ladspa.Thin is
       LowerBound     : LADSPA_Control_Data;
       UpperBound     : LADSPA_Control_Data;
    end record;
+   pragma Convention (C, LADSPA_PortRangeHint);
 
    No_PortRangeHint : constant LADSPA_PortRangeHint := (HintDescriptor => LADSPA_PortRangeHintDescriptor'First,
                                                         LowerBound     => LADSPA_Control_Data'Last,
@@ -108,21 +109,21 @@ package Solid.Audio.Ladspa.Thin is
    return LADSPA_Handle;
    pragma Convention (C, Instantiate_Function);
 
-   type Instance_Procedure is access procedure (Instance : in out LADSPA_Handle);
+   type Instance_Procedure is access procedure (Instance : in LADSPA_Handle);
    pragma Convention (C, Instance_Procedure);
 
    -- Consider a port index/number/ID type.
 
-   type Connect_Port_Procedure is access procedure (Instance     : in out LADSPA_Handle;
+   type Connect_Port_Procedure is access procedure (Instance     : in     LADSPA_Handle;
                                                     Port         : in     Port_Index;
-                                                    DataLocation : in     System.Address);
-                                                    -- DataLocation : in     LADSPA_Control_Handle);
+                                                    DataLocation : in out LADSPA_Control_Data);
    pragma Convention (C, Connect_Port_Procedure);
 
-   type Run_Procedure is access procedure (Instance : in out LADSPA_Handle; SampleCount : in C.unsigned_long);
+   type Run_Procedure is access procedure (Instance : in LADSPA_Handle; SampleCount : in C.unsigned_long);
    pragma Convention (C, Run_Procedure);
 
-   type Run_Gain_Procedure is access procedure (Instance : in out LADSPA_Handle; Gain : in LADSPA_Control_Data);
+   type Run_Gain_Procedure is access procedure (Instance : in LADSPA_Handle; Gain : in LADSPA_Control_Data);
+   pragma Convention (C, Run_Gain_Procedure);
 
    type LADSPA_Descriptor is record
       UniqueID            : Ladspa.Plugin_ID;
@@ -149,4 +150,5 @@ package Solid.Audio.Ladspa.Thin is
    pragma Convention (C, LADSPA_Descriptor);
 
    type LADSPA_Descriptor_Function is access function (Index : Ladspa.Plugin_Index) return LADSPA_Descriptor_Handle;
+   pragma Convention (C, LADSPA_Descriptor_Function);
 end Solid.Audio.Ladspa.Thin;
