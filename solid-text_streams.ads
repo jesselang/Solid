@@ -11,7 +11,7 @@ package Solid.Text_Streams is
 
    procedure Create (Stream      :    out Text_Stream;
                      From        : access Ada.Streams.Root_Stream_Type'Class;
-                     Line_Ending : in     Line_Terminator);
+                     Line_Ending : in     Line_Terminator := CR_LF);
    -- Creates a new Text_Stream in Stream, using the stream in From.
 
    procedure Skip_Line (Stream : in out Text_Stream; Spacing : in Positive := 1);

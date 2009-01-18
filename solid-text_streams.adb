@@ -227,7 +227,9 @@ package body Solid.Text_Streams is
    -- Sets Item to the characters read, sets Last to the last character assigned to Item.
    -- Raises End_Of_Stream if the stream has ended.
 
-   procedure Create (Stream : out Text_Stream; From : access Ada.Streams.Root_Stream_Type'Class; Line_Ending : in Line_Terminator)
+   procedure Create (Stream      :    out Text_Stream;
+                     From        : access Ada.Streams.Root_Stream_Type'Class;
+                     Line_Ending : in     Line_Terminator := CR_LF)
    is
    begin -- Create
       Stream.Stream      := From;
