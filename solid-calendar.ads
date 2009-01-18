@@ -11,4 +11,8 @@ package Solid.Calendar is
                                                                     Day   => 1);
    -- The classic UNIX epoch, January 1st, 1970.  To be used to calculate the number of seconds
    -- since this monumental yet fictitious moment.
+
+   Forever : constant Duration; -- Longest possible delay on this implementation.
+private -- Solid.Calendar
+   Forever : constant Duration := Duration'Last;
 end Solid.Calendar;

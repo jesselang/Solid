@@ -18,6 +18,7 @@ project Solid is
        "solid-data_structures-hashed_multimaps.adb",
        "solid-debug.ads",
        "solid-debug-analyzer.adb",
+       "solid-finalization.adb",
        "solid-interfaces.ads",
        "solid-interfaces-bitwise_enumerations.adb",
        "solid-interfaces-libraries.adb",

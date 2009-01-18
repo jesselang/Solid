@@ -55,6 +55,16 @@ package body Solid.Web.Response is
       return Result;
    end URL;
 
+   function Code (Object : Data) return Web.Messages.Status_Code is
+   begin -- Code
+      return Object.Code;
+   end Code;
+
+   function Reason (Object : Data) return String is
+   begin -- Reason
+      return +Object.Reason;
+   end Reason;
+
    function Headers (Object : Data) return Web.Headers.List is
    begin -- Headers
       return Object.Headers;

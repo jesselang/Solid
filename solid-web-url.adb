@@ -20,6 +20,67 @@ package body Solid.Web.URL is
    --
    --                                          <--  pathname  -->
 
+   function Protocol (URL : Object) return URL_Protocol is
+   begin -- Protocol
+      return URL.Protocol;
+   end Protocol;
+
+   use Solid.Strings;
+
+   function Username (URL : Object) return String is
+   begin -- Username
+      return +URL.Username;
+   end Username;
+
+   function Password (URL : Object) return String is
+   begin -- Password
+      return +URL.Password;
+   end Password;
+
+   function Host (URL : Object) return String is
+   begin -- Host
+      return +URL.Host;
+   end Host;
+
+   function Port (URL : Object) return Network_Port is
+   begin -- Port
+      return URL.Port;
+   end Port;
+
+   function Path (URL : Object) return String is
+   begin -- Path
+      return +URL.Path;
+   end Path;
+
+   function Parameters (URL : Object) return Web.Parameters.List is
+   begin -- Parameters
+      return URL.Parameters;
+   end Parameters;
+
+   function URL_String (URL : Object) return String is
+   begin -- URL_String
+      return "";
+   end URL_String;
+
+   function Parse (URL : String) return Object is
+      Protocol_Index : constant Natural := Ada.Strings.Fixed.Index (URL, Pattern => "://");
+
+      Parsed : Object;
+   begin -- Parse
+      if URL'Length = 0 or Protocol_Index = 0 then
+         raise Invalid;
+      end if;
+
+      declare
+         Path_Index : constant Natural := Ada.Strings.Fixed.Index (URL (Protocol_Index + 1 .. URL'Last), Pattern => "/");
+         Auth_Index : constant Natural := Ada.Strings.Fixed.Index (URL (Protocol_Index + 1 .. Path_Index - 1), Pattern => "@");
+      begin
+         null;
+      end;
+
+      return (others => <>);
+   end Parse;
+
    function Query (URL : String) return String is
       First : constant Natural := Ada.Strings.Fixed.Index (Source => URL, Pattern => "?") + 1;
 
