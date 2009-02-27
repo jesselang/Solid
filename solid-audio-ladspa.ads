@@ -4,5 +4,5 @@ package Solid.Audio.Ladspa is
 
    type Plugin_Handle is new Interfaces.C.Extensions.opaque_structure_def_ptr;
 
-   type Control_Value is new Interfaces.C.C_Float;
+   subtype Control_Value is Sample; -- This is required for connecting audio ports.  Otherwise GNAT gives a bug box.
 end Solid.Audio.Ladspa;

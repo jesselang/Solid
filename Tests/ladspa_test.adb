@@ -2,10 +2,10 @@ with Ada.Text_IO;
 with Solid.Audio.Ladspa.Host;
 
 procedure Ladspa_Test is
-   procedure Output (Message : in String) is
-   begin -- Output
+   procedure Output_Warning (Message : in String) is
+   begin -- Output_Warning
       Ada.Text_IO.Put_Line (Message);
-   end Output;
+   end Output_Warning;
 
    procedure Display (ID        : in     Solid.Audio.Ladspa.Plugin_ID;
                       Label     : in     String;
@@ -21,11 +21,15 @@ procedure Ladspa_Test is
 
    procedure List_Plugins is new Solid.Audio.Ladspa.Host.Available_Plugins (Process => Display);
 
-   procedure Display_Warnings is new Solid.Audio.Ladspa.Host.Warnings (Process => Output);
+   procedure Display_Warnings is new Solid.Audio.Ladspa.Host.Warnings (Process => Output_Warning);
 
    Warnings : Boolean := True;
    Plugin   : Solid.Audio.Ladspa.Host.Plugin;
+   Input    : Solid.Audio.Buffer_Handle := new Solid.Audio.Sample_Buffer (1 .. 128);
+   Output   : Solid.Audio.Buffer_Handle := new Solid.Audio.Sample_Buffer (1 .. 128);
 begin -- Ladspa_Test
+   Input.all := (others => 0.5);
+
    Solid.Audio.Ladspa.Host.Initialize (Warnings => Warnings);
 
    Display_Warnings;
@@ -49,5 +53,19 @@ begin -- Ladspa_Test
          Ada.Text_IO.Put_Line
             (Item => Solid.Audio.Ladspa.Host.Port_Direction'Image (Solid.Audio.Ladspa.Host.Direction (Ports (Index).all) ) );
       end loop All_Ports;
+
+      Solid.Audio.Ladspa.Host.Connect (Plugin, Port => Solid.Audio.Ladspa.Host.Audio_Port (Ports (1).all), Buffer => Input.all);
+      Solid.Audio.Ladspa.Host.Connect (Plugin, Port => Solid.Audio.Ladspa.Host.Audio_Port (Ports (9).all), Buffer => Output.all);
+
+      Solid.Audio.Ladspa.Host.Activate (Plugin);
+      Solid.Audio.Ladspa.Host.Run (Plugin, Sample_Count => 128);
+      Solid.Audio.Ladspa.Host.Deactivate (Plugin);
+      Solid.Audio.Ladspa.Host.Cleanup (Plugin);
+
+      for Index in Output'Range loop
+         Ada.Text_IO.Put_Line (Output(index)'Img);
+      end loop;
+
+      Ada.Text_IO.Put_Line (Solid.Audio.Ladspa.Host.Get (Solid.Audio.Ladspa.Host.Control_Port'Class (Ports (10).all))'img);
    end;
 end Ladspa_Test;

@@ -80,7 +80,7 @@ package Solid.Audio.Ladspa.Host is
 
    type Audio_Port is new Plugin_Port with private;
 
-   procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in Buffer_Handle);
+   procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in out Sample_Buffer);
 
    type Control_Port is abstract new Plugin_Port with private;
 
@@ -118,6 +118,12 @@ package Solid.Audio.Ladspa.Host is
 
    procedure Set (Control : in out Integer_Control; Value : in Integer);
 
+
+
+
+
+
+
    --~ function Low_Bound (Control : Plugin_Control) return Control_Value;
 
    --~ function High_Bound (Control : Plugin_Control) return Control_Value;
@@ -149,7 +155,7 @@ private -- Solid.Audio.Ladspa.Host
    end record;
 
    type Audio_Port is new Plugin_Port with record
-      Handle : Buffer_Handle;
+      Connected : Boolean := False;
    end record;
 
    type Hint_List is array (Port_Hint) of Boolean;

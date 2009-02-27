@@ -358,10 +358,6 @@ package body Solid.Audio.Ladspa.Host is
       end case;
    end Available_Plugins;
 
-   -- Instantiate
-   -- Connect ports and set.
-   -- Run and such.
-
    procedure Instantiate (P : in out Plugin; Rate : in Sample_Rate);
 
    procedure Create_Ports (P : in out Plugin);
@@ -397,7 +393,9 @@ package body Solid.Audio.Ladspa.Host is
       P.State := Instantiated;
 
       Create_Ports (P);
-      P.State := Connected;
+
+      -- The plugin isn't actually Connected until all ports (including audio) are connected.
+      -- P.State := Connected;
    exception -- Create
       when Library_Not_Found | Library_Not_LADSPA =>
          raise Plugin_Not_Found;
@@ -434,7 +432,9 @@ package body Solid.Audio.Ladspa.Host is
       P.State := Instantiated;
 
       Create_Ports (P);
-      P.State := Connected;
+
+      -- The plugin isn't actually Connected until all ports (including audio) are connected.
+      -- P.State := Connected;
    exception -- Create
       when Library_Not_Found | Library_Not_LADSPA =>
          raise Plugin_Not_Found;
@@ -448,6 +448,8 @@ package body Solid.Audio.Ladspa.Host is
 
       -- Check state.
 
+      -- Do something useful.
+
       return False;
    end Have_Property;
 
@@ -458,11 +460,8 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      --~ if Audio_Port (P.Ports (1).all).Handle = null or Audio_Port (P.Ports (9).all).Handle = null then
-         --~ raise Program_Error;
-      --~ end if;
-
       -- Check state.
+
       if P.Descriptor.Activate /= null then
          P.Descriptor.Activate (Instance => P.Instance);
       end if;
@@ -478,6 +477,7 @@ package body Solid.Audio.Ladspa.Host is
       end if;
 
       -- Check state.
+
       if P.Descriptor.Deactivate /= null then
          P.Descriptor.Deactivate (Instance => P.Instance);
       end if;
@@ -493,19 +493,9 @@ package body Solid.Audio.Ladspa.Host is
       end if;
 
       -- Check state.
-      Ada.Text_IO.Put_Line ("Run");
-      P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
-      Ada.Text_IO.Put_Line ("Fun");
-      P.State := Running;
 
-      --~ if P.State = Activated then
-         --~ P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
-         --~ P.State := Running;
-      --~ elsif P.State = Running then
-         --~ P.Descriptor.Run_Adding (Instance => P.Instance, SampleCount => Count);
-      --~ else
-         --~ raise Invalid_State;
-      --~ end if;
+      P.Descriptor.Run (Instance => P.Instance, SampleCount => Count);
+      P.State := Running;
    end Run;
 
    procedure Cleanup (P : in out Plugin) is
@@ -554,7 +544,7 @@ package body Solid.Audio.Ladspa.Host is
       return P.Ports.all;
    end Ports;
 
-   procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in Buffer_Handle) is
+   procedure Connect (P : in out Plugin; Port : in out Audio_Port; Buffer : in out Sample_Buffer) is
       use type Thin.Connect_Port_Procedure;
       use Solid.Strings;
    begin -- Connect
@@ -562,40 +552,16 @@ package body Solid.Audio.Ladspa.Host is
          raise Not_Initialized;
       end if;
 
-      Port.Handle := Buffer;
-
       if P.Descriptor.Connect_Port = null then
          raise Program_Error;
-      else
-         Ada.Text_IO.Put_Line ("Connect - Pre: Connect_Port is not null");
       end if;
 
       if P.Instance = null then
          raise Program_Error;
       end if;
 
-      Ada.Text_IO.Put_Line (Port.Index'Img & " - " & (+Port.Name) );
-
-      P.Descriptor.Connect_Port
-         (Instance => P.Instance, Port => Port.Index, DataLocation => Control_Value (Port.Handle (Port.Handle'First) ) );
-      --~ P.Descriptor.Connect_Port
-         --~ (Instance     => Instance,
-          --~ Port         => Port.Index,
-          --~ DataLocation => Port.Handle (Port.Handle'First)'Address);
-      --~ P.Descriptor.Connect_Port
-         --~ (Instance     => Instance,
-          --~ Port         => Index,
-          --~ DataLocation => Address);
-
-      if P.Instance = null then
-         raise Program_Error;
-      end if;
-
-      if P.Descriptor.Connect_Port = null then
-         raise Program_Error;
-      else
-         Ada.Text_IO.Put_Line ("Connect - Post: Connect_Port is not null");
-      end if;
+      P.Descriptor.Connect_Port (Instance => P.Instance, Port => Port.Index, DataLocation => Buffer (Buffer'First) );
+      Port.Connected := True;
    end Connect;
 
    function Take_Hint (Control : Control_Port'Class; Hint : Port_Hint) return Boolean is
@@ -654,8 +620,6 @@ package body Solid.Audio.Ladspa.Host is
       if not Initialized then
          raise Not_Initialized;
       end if;
-
-      -- Check bounds?
 
       if Enable then
          Control.Value := 1.0;
@@ -882,18 +846,10 @@ package body Solid.Audio.Ladspa.Host is
 
             if P.Descriptor.Connect_Port = null then
                raise Program_Error;
-            else
-               Ada.Text_IO.Put_Line ("Create_Ports - Pre: Connect_Port is not null");
             end if;
 
             -- Connect control port.
             P.Descriptor.Connect_Port (Instance => P.Instance, Port => Port_Index, DataLocation => Control.Value);
-
-            if P.Descriptor.Connect_Port = null then
-               raise Program_Error;
-            else
-               Ada.Text_IO.Put_Line ("Create_Ports - Post: Connect_Port is not null");
-            end if;
 
             -- Set the remaining port hints.
             if (Port_Hints (Port_Index).HintDescriptor and Thin.Logarithmic) > 0 then

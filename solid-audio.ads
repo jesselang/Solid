@@ -7,7 +7,6 @@ package Solid.Audio is
    type Sample_Buffer is array (Buffer_Size range <>) of aliased Sample;
    pragma Convention (C, Sample_Buffer); -- Not sure if this is needed to pass buffers around.
    type Buffer_Handle is access Sample_Buffer;
-   --pragma Convention (C, Buffer_Handle);
    package Buffers is new Interfaces.C.Pointers (Index              => Buffer_Size,
                                                  Element            => Sample,
                                                  Element_Array      => Sample_Buffer,
@@ -15,7 +14,8 @@ package Solid.Audio is
                                                  -- Do *not* use operations that use Default_Terminator.
                                                  -- Use length-based operations only.
                                                  -- This is not a valid terminator.
-   subtype Buffer_Pointer is Buffers.Pointer;
+
+   subtype Buffer_Pointer is Buffers.Pointer;    -- This is an access type for Sample.
 
    type Sample_Rate is range 8000 .. 48000;
 end Solid.Audio;
