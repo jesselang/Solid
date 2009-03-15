@@ -391,11 +391,8 @@ package body Solid.Audio.Ladspa.Host is
       Instantiate (P, Rate => Rate);
       P.Rate  := Rate;
       P.State := Instantiated;
-
       Create_Ports (P);
-
-      -- The plugin isn't actually Connected until all ports (including audio) are connected.
-      -- P.State := Connected;
+      P.State := Connected;
    exception -- Create
       when Library_Not_Found | Library_Not_LADSPA =>
          raise Plugin_Not_Found;
@@ -430,11 +427,8 @@ package body Solid.Audio.Ladspa.Host is
       Instantiate (P, Rate => Rate);
       P.Rate  := Rate;
       P.State := Instantiated;
-
       Create_Ports (P);
-
-      -- The plugin isn't actually Connected until all ports (including audio) are connected.
-      -- P.State := Connected;
+      P.State := Connected;
    exception -- Create
       when Library_Not_Found | Library_Not_LADSPA =>
          raise Plugin_Not_Found;
