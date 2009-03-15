@@ -13,10 +13,13 @@ package Solid.Audio.Jack is
    procedure Close (Connection : in out Client);
    -- Closes the Connection.
 
+   type Audio_Processor is access procedure (Input : in Sample_Buffer; Output : out Sample_Buffer);
+
+   function Max_Buffer_Size (Connection : Client) return Solid.Audio.Buffer_Size;
+   -- Returns the maximum buffer size that an Audio_Processor should be able to accomodate.
+
    -- Activate and deactivate are not used.
    -- Client is activated when Register is first used.
-
-   type Audio_Processor is access procedure (Input : in Sample_Buffer; Output : out Sample_Buffer);
 
    procedure Register (Connection : in out Client; Input : in String; Output : in String; Process : not null Audio_Processor);
 

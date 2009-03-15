@@ -3,7 +3,7 @@ with Ada.Text_IO;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;
 with Solid.Audio.Jack.Thin;
-with Solid.Audio.Jack.Thread;
+--with Solid.Audio.Jack.Thread;
 with System;
 
 package body Solid.Audio.Jack is
@@ -36,13 +36,13 @@ package body Solid.Audio.Jack is
       end if;
 
       -- Required for the stack to remain sane.
-      Result := Thin.jack_set_thread_init_callback (Connection.Handle,
-                                                    thread_init_callback => Thread.Initialize'Access,
-                                                    arg                  => System.Null_Address);
+      --~ Result := Thin.jack_set_thread_init_callback (Connection.Handle,
+                                                    --~ thread_init_callback => Thread.Initialize'Access,
+                                                    --~ arg                  => System.Null_Address);
 
-      if Result /= 0 then
-         raise Client_Error with "Couldn't set thread init callback for jack.";
-      end if;
+      --~ if Result /= 0 then
+         --~ raise Client_Error with "Couldn't set thread init callback for jack.";
+      --~ end if;
 
       -- Set the internal callback, and activate.
 
@@ -83,6 +83,15 @@ package body Solid.Audio.Jack is
          Ada.Text_IO.Put_Line ("Close - " & Ada.Exceptions.Exception_Information (E) );
          raise;
    end Close;
+
+   function Max_Buffer_Size (Connection : Client) return Solid.Audio.Buffer_Size is
+   begin -- Max_Buffer_Size
+      if Connection.State > Initialized then
+         raise Client_Error with "Client already activated.";
+      end if;
+
+      return Thin.jack_get_buffer_size (Connection.Handle);
+   end Max_Buffer_Size;
 
    procedure Register (Connection : in out Client; Input : in String; Output : in String; Process : not null Audio_Processor) is
       New_Process : Audio_Process;
@@ -216,7 +225,7 @@ package body Solid.Audio.Jack is
          for Index in Buffer'Range loop
             Location.all := Buffer (Index);
             if Index < Buffer'Last then
-               Buffers.Increment (Location);
+               C_Buffers.Increment (Location);
             end if;
          end loop;
       end Write;
@@ -237,10 +246,11 @@ package body Solid.Audio.Jack is
                Input_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Input, nframes => nframes);
                Output_Handle := Thin.jack_port_get_buffer (port => Processes (Index).Output, nframes => nframes);
 
-               Output_Buffer := Buffers.Value (Input_Handle, Length => Buffer_Length);  -- Does this copy the input buffer to the output buffer by default?
-                                                                                        -- Should it be silence instead?
+               Output_Buffer := C_Buffers.Value (Input_Handle, Length => Buffer_Length);
+               -- Does this copy the input buffer to the output buffer by default?
+               -- Should it be silence instead?
 
-               Processes (Index).Process (Input  => Buffers.Value (Input_Handle, Length => Buffer_Length),
+               Processes (Index).Process (Input  => C_Buffers.Value (Input_Handle, Length => Buffer_Length),
                                           Output => Output_Buffer);
                Write (Buffer => Output_Buffer, To => Output_Handle);
             end if;

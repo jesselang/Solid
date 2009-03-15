@@ -128,6 +128,10 @@ private package Solid.Audio.Jack.Thin is
    pragma Import (C, jack_port_get_buffer);
       -- void *jack_port_get_buffer (jack_port_t *, jack_nframes_t);
 
+   function jack_get_buffer_size (client : jack_client_t) return jack_nframes_t;
+   pragma Import (C, jack_get_buffer_size);
+   -- jack_nframes_t jack_get_buffer_size (jack_client_t *);
+
    -- Jack client options.
    type JackOptions is (JackNullOption, JackNoStartServer, JackUseExactName, JackServerName, JackLoadName, JackLoadInit);
 
