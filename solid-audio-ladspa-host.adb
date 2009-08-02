@@ -17,6 +17,11 @@ with System;
 with Ada.Text_IO;
 
 package body Solid.Audio.Ladspa.Host is
+
+   ------------------------
+   -- Library Management --
+   ------------------------
+
    type Library_Key is record
       Path  : Strings.U_String;
       Name  : Strings.U_String;
@@ -40,7 +45,6 @@ package body Solid.Audio.Ladspa.Host is
                                                            Hash            => Hash,
                                                            Equivalent_Keys => Equivalent_Keys);
 
-   -- Library file management.
    Library_Not_Found  : exception;
    Library_Not_LADSPA : exception;
 
@@ -52,6 +56,7 @@ package body Solid.Audio.Ladspa.Host is
       -- Descriptor will be Thin.No_Descriptor if no plugin descriptor is found at Library.Index.
 
       procedure Close (Library : in Library_Key);
+      -- Closes the resources associated with Library.
    private -- Library_Manager
       Open_Libraries : Library_Maps.Map;
    end Library_Manager;
@@ -506,7 +511,7 @@ package body Solid.Audio.Ladspa.Host is
       P.State := Finalized;
    end Cleanup;
 
-   function Name (Port : Plugin_Port'Class) return String is
+   function Name (Port : Plugin_Port) return String is
       function "+" (Left : Strings.U_String) return String renames Strings."+";
    begin -- Name
       if not Initialized then
@@ -516,7 +521,7 @@ package body Solid.Audio.Ladspa.Host is
       return +Port.Name;
    end Name;
 
-   function Direction (Port : Plugin_Port'Class) return Port_Direction is
+   function Direction (Port : Plugin_Port) return Port_Direction is
    begin -- Direction
       if not Initialized then
          raise Not_Initialized;
@@ -558,7 +563,7 @@ package body Solid.Audio.Ladspa.Host is
       Port.Connected := True;
    end Connect;
 
-   function Take_Hint (Control : Control_Port'Class; Hint : Port_Hint) return Boolean is
+   function Take_Hint (Control : Control_Port; Hint : Port_Hint) return Boolean is
    begin -- Take_Hint
       if not Initialized then
          raise Not_Initialized;
@@ -567,7 +572,7 @@ package body Solid.Audio.Ladspa.Host is
       return Control.Hints (Hint);
    end Take_Hint;
 
-   procedure Set_Default (Control : in out Control_Port'Class) is
+   procedure Set_Default (Control : in out Control_Port) is
    begin -- Set_Default
       if not Initialized then
          raise Not_Initialized;
@@ -578,7 +583,7 @@ package body Solid.Audio.Ladspa.Host is
       Control.Value := Control.Default;
    end Set_Default;
 
-   function Get (Control : Control_Port'Class) return Control_Value is
+   function Get (Control : Control_Port) return Control_Value is
    begin -- Get
       if not Initialized then
          raise Not_Initialized;

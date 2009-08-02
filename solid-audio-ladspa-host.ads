@@ -61,13 +61,17 @@ package Solid.Audio.Ladspa.Host is
    procedure Cleanup (P : in out Plugin);
    -- Finalizes the plugin.
 
+   -----------
+   -- Ports --
+   -----------
+
    type Plugin_Port is abstract tagged limited private;
 
-   function Name (Port : Plugin_Port'Class) return String;
+   function Name (Port : Plugin_Port) return String;
 
    type Port_Direction is (Input, Output);
 
-   function Direction (Port : Plugin_Port'Class) return Port_Direction;
+   function Direction (Port : Plugin_Port) return Port_Direction;
 
 
    type Port_Handle is access Plugin_Port'Class;
@@ -86,13 +90,13 @@ package Solid.Audio.Ladspa.Host is
 
    type Port_Hint is (Logarithmic);
 
-   function Take_Hint (Control : Control_Port'Class; Hint : Port_Hint) return Boolean;
+   function Take_Hint (Control : Control_Port; Hint : Port_Hint) return Boolean;
 
    Range_Error : exception;
 
-   procedure Set_Default (Control : in out Control_Port'Class);
+   procedure Set_Default (Control : in out Control_Port);
 
-   function Get (Control : Control_Port'Class) return Control_Value;
+   function Get (Control : Control_Port) return Control_Value;
 
    type Normal_Control is new Control_Port with private;
 
