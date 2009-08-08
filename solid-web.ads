@@ -2,7 +2,7 @@
 -- A high-level abstraction is offered, making web-based applications easier to develop using this framework.
 
 package Solid.Web is
-   pragma Pure;
+   -- pragma Pure;
 
    type Network_Port is new Natural;
    Default_HTTP_Port : constant Network_Port;
