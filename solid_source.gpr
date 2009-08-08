@@ -1,0 +1,28 @@
+-- This project is designed to be extended since it only contains the source files.
+-- See solid_lib.gpr and solid.gpr for more information.
+with "../PragmARC/pragmarc";
+
+project Solid_Source is
+   for Source_Files use
+      ("solid.ads",
+       "solid-calendar.ads",
+       "solid-calendar-utc.adb",
+       "solid-data_structures.ads",
+       "solid-data_structures-hashed_multimaps.adb",
+       "solid-debug.ads",
+       "solid-debug-analyzer.adb",
+       "solid-finalization.adb",
+--       "solid-formats.ads",
+--       "solid-formats-json.ads",
+--       "solid-formats-json-generator.ads",
+       "solid-interfaces.ads",
+       "solid-interfaces-bitwise_enumerations.adb",
+       "solid-interfaces-libraries.adb",
+       "solid-interrupt_handling.adb",
+       "solid-net.ads",
+--       "solid-net-iax.ads",
+       "solid-platform.ads",
+       --"solid-platform-endian.adb",
+       "solid-strings.ads",
+       "solid-text_streams.adb");
+end Solid_Source;
