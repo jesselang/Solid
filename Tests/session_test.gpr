@@ -1,3 +1,4 @@
+with "../solid-web";
 with "../solid";
 
 project Session_Test is
@@ -5,5 +6,7 @@ project Session_Test is
    for Exec_Dir use ".";
    for Main use ("session_test.adb");
 
-   package Builder renames Solid.Builder;
+   package Builder is
+      for Default_Switches ("Ada") use ("-m", "-gnato", "-gnat05", "-O1", "-j2", "-fstack-check");
+   end Builder;
 end Session_Test;

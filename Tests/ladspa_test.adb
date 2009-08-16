@@ -34,7 +34,7 @@ begin -- Ladspa_Test
 
    Display_Warnings;
 
-   --List_Plugins;
+   List_Plugins;
 
    Solid.Audio.Ladspa.Host.Create (Plugin, Rate => 48_000, ID => 1794);
 
@@ -62,10 +62,10 @@ begin -- Ladspa_Test
       Solid.Audio.Ladspa.Host.Deactivate (Plugin);
       Solid.Audio.Ladspa.Host.Cleanup (Plugin);
 
-      for Index in Output'Range loop
-         Ada.Text_IO.Put_Line (Output(index)'Img);
-      end loop;
+      --~ for Index in Output'Range loop
+         --~ Ada.Text_IO.Put_Line (Output(index)'Img);
+      --~ end loop;
 
-      Ada.Text_IO.Put_Line (Solid.Audio.Ladspa.Host.Get (Solid.Audio.Ladspa.Host.Control_Port'Class (Ports (10).all))'img);
+      Ada.Text_IO.Put_Line (Solid.Audio.Ladspa.Host.Get (Ports (10).all)'img);
    end;
 end Ladspa_Test;
