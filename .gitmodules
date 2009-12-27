@@ -1,0 +1,6 @@
+[submodule "Web"]
+	path = Web
+	url = git@github.com:jesselang/Solid-Web.git
+[submodule "Audio"]
+	path = Audio
+	url = git@github.com:jesselang/Solid-Audio.git
