@@ -1,6 +1,6 @@
 package body Solid.Text_Streams is
-   Stream_CR : constant Ada.Streams.Stream_Element := Ada.Streams.Stream_Element'Val (Character'Pos (ASCII.CR) );
-   Stream_LF : constant Ada.Streams.Stream_Element := Ada.Streams.Stream_Element'Val (Character'Pos (ASCII.LF) );
+   Stream_CR : constant := Character'Pos (ASCII.CR);
+   Stream_LF : constant := Character'Pos (ASCII.LF);
    -- These constants are used for parsing lines from the Text_Stream, in Is_Line_Ending and in Skip_Full_Terminator.
 
    function Line_Ending (Terminator : Line_Terminator) return String is
@@ -20,7 +20,7 @@ package body Solid.Text_Streams is
 
    function To_Character (Item : Ada.Streams.Stream_Element) return Character is
    begin -- To_Character
-      return Character'Val (Ada.Streams.Stream_Element'Pos (Item) );
+      return Character'Val (Item);
    end To_Character;
    pragma Inline (To_Character);
    -- Converts Item from a Stream_Element to a Character.
@@ -304,7 +304,7 @@ package body Solid.Text_Streams is
                   (Ada.Streams.Stream_Element_Offset (Item'First) .. Ada.Streams.Stream_Element_Offset (Item'Last) );
    begin -- To_Stream
       for Index in Result'Range loop
-         Result (Index) := Ada.Streams.Stream_Element'Val (Character'Pos (Item (Positive (Index) ) ) );
+         Result (Index) := Character'Pos (Item (Positive (Index) ) );
       end loop;
 
       return Result;
