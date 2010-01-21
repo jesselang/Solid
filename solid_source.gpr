@@ -27,6 +27,5 @@ project Solid_Source is
        "solid-platform.ads",
        "solid-strings.ads",
        "solid-text_streams.adb",
-       "solid-text_streams.ads",
-       "solid-uuid.ads");
+       "solid-text_streams.ads");
 end Solid_Source;
