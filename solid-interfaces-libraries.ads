@@ -6,6 +6,9 @@ package Solid.Interfaces.Libraries is
 
    No_Handle : constant Handle;
 
+   function Error return String;
+   -- Returns the error information when called immediately after calling any of the following operations.
+
    function Load (Path : String) return Handle;
    -- Loads the library in Path.
    -- Returns No_Handle if a library identified by Path could not be found.

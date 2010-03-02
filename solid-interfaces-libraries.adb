@@ -5,9 +5,6 @@ package body Solid.Interfaces.Libraries is
    pragma Linker_Options ("-ldl");
    package C renames Standard.Interfaces.C;
 
-   function Error return String;
-   -- Returns the last error from dlopen, dlclose, and dlsym.
-
    function Error return String is
       function dlerror return C.Strings.chars_ptr;
       pragma Import (C, dlerror);
