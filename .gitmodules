@@ -4,3 +4,9 @@
 [submodule "Audio"]
 	path = Audio
 	url = git@github.com:jesselang/Solid-Audio.git
+[submodule "Solid-Media"]
+	path = Solid-Media
+	url = git@github.com:jesselang/Solid-Media.git
+[submodule "Media"]
+	path = Media
+	url = git@github.com:jesselang/Solid-Media.git
