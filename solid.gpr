@@ -26,7 +26,7 @@ project Solid extends "solid_source" is
    --------------
 
    Common_Options :=
-      ("-gnat05", "-Wall", "-fstack-check");
+      ("-gnat05", "-Wall", "-fstack-check", "-fPIC");
    -- ("-gnat05", "-gnatwcfijkmruv", "-gnaty3abcefhiklmnoprstx", "-Wall");
    --  Common options used for the Debug and Release modes
 
