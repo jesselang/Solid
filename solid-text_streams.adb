@@ -45,13 +45,13 @@ package body Solid.Text_Streams is
    pragma Inline (Is_Line_Ending);
    -- Returns True if Item is considered a line terminating character, otherwise False.
 
-   procedure Read_Element (Stream : in out Text_Stream; Item : out Ada.Streams.Stream_Element) is
+   procedure Read_Element (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Ada.Streams.Stream_Element) is
       Buffer : Ada.Streams.Stream_Element_Array (1 .. 1);
       Last   : Ada.Streams.Stream_Element_Offset;
 
       use type Ada.Streams.Stream_Element_Offset;
    begin -- Read_Element
-      Ada.Streams.Read (Stream => Stream.Stream.all, Item => Buffer, Last => Last);
+      Ada.Streams.Read (Stream => Stream.all, Item => Buffer, Last => Last);
 
       if Last = 0 then
          raise End_Of_Stream;
@@ -62,7 +62,6 @@ package body Solid.Text_Streams is
       when Constraint_Error =>
          raise End_Of_Stream;
    end Read_Element;
-   pragma Inline (Read_Element);
    -- Reads one Stream_Element from Stream to Item.
    -- Raises End_Of_Stream if the stream has ended.
 
@@ -70,7 +69,7 @@ package body Solid.Text_Streams is
    begin -- Skip_Line_Terminators
       if not Stream.Read_First_Element or else Is_Line_Ending (Stream.First_Element) then
          loop
-            Read_Element (Stream => Stream, Item => Stream.First_Element);
+            Read_Element (Stream => Stream.Stream, Item => Stream.First_Element);
 
             exit when not Is_Line_Ending (Stream.First_Element);
          end loop;
@@ -138,7 +137,7 @@ package body Solid.Text_Streams is
    begin -- Skip_Full_Terminator
       case Stream.First_Element is
          when Stream_CR =>
-            Read_Element (Stream => Stream, Item => Stream.First_Element);
+            Read_Element (Stream => Stream.Stream, Item => Stream.First_Element);
 
             Stream.Read_First_Element := Stream.First_Element /= Stream_LF;
          when others =>
@@ -154,7 +153,7 @@ package body Solid.Text_Streams is
    begin -- Find_Line_Terminator
       if not Stream.Read_First_Element or else not Is_Line_Ending (Stream.First_Element) then
          loop
-            Read_Element (Stream => Stream, Item => Stream.First_Element);
+            Read_Element (Stream => Stream.Stream, Item => Stream.First_Element);
 
             exit when Is_Line_Ending (Stream.First_Element);
          end loop;
@@ -198,7 +197,7 @@ package body Solid.Text_Streams is
       -- for I in Buffer_Last + 1 .. Buffer'Last loop
       loop
          begin
-            Read_Element (Stream => Stream, Item => Stream.First_Element);
+            Read_Element (Stream => Stream.Stream, Item => Stream.First_Element);
          exception
             when End_Of_Stream =>
                if Buffer_Last = Buffer'First - 1 then
@@ -236,7 +235,7 @@ package body Solid.Text_Streams is
       Stream.Line_Ending := Line_Ending;
    end Create;
 
-   procedure Skip_Line (Stream  : in out Text_Stream; Spacing : in Positive := 1) is
+   procedure Skip_Line (Stream : in out Text_Stream; Spacing : in Positive := 1) is
    begin -- Skip_Line
       for Index in 1 .. Spacing loop
          Find_Line_Terminator (Stream => Stream);
@@ -273,8 +272,6 @@ package body Solid.Text_Streams is
 
    procedure Put (Stream : in out Text_Stream; Item : in String) is
       use Ada.Streams;
-
-
    begin -- Put
       Write (Stream => Stream.Stream.all, Item => To_Stream (Item) );
    end Put;
@@ -298,6 +295,91 @@ package body Solid.Text_Streams is
       Put (Stream => Stream, Item => Item);
       New_Line (Stream => Stream);
    end Put_Line;
+
+   -- Unbuffered operaitons on raw streams.
+   -- I think these will likely cause the special Text_Stream and its associated operations to be deprecated.
+
+   procedure Get (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Ada.Streams.Stream_Element);
+   -- After skipping any line terminators, reads the next character from Stream into Item.
+   -- Raises End_Of_Stream when the end of Stream has been reached.
+
+   procedure Get (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Ada.Streams.Stream_Element) is
+      Buffer : Ada.Streams.Stream_Element;
+   begin -- Get
+      Skip_Line_Terminators : loop
+         Read_Element (Stream => Stream, Item => Buffer);
+
+         exit when not Is_Line_Ending (Buffer);
+      end loop Skip_Line_Terminators;
+
+      Item := Buffer;
+   end Get;
+
+
+   procedure Get (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Character) is
+      Buffer : Ada.Streams.Stream_Element;
+   begin -- Get
+      Get (Stream => Stream, Item => Buffer);
+
+      Item := To_Character (Buffer);
+   end Get;
+
+   procedure Get (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out String; Last : out Natural) is
+      Buffer : Ada.Streams.Stream_Element_Array
+                  (Ada.Streams.Stream_Element_Offset (Item'First) .. Ada.Streams.Stream_Element_Offset (Item'Last) );
+
+      Buffer_Last : Ada.Streams.Stream_Element_Offset;
+   begin -- Get
+      if Item'Length <= 0 then
+         Last := Item'First - 1;
+
+         return;
+      end if;
+
+      Get (Stream => Stream, Item => Buffer (Buffer'First) );
+      Buffer_Last := Buffer'First;
+
+      if Buffer'Length > 1 then
+         Ada.Streams.Read (Stream => Stream.all, Item => Buffer (Buffer'First .. Buffer'Last), Last => Buffer_Last);
+      end if;
+
+      Item (Item'First .. Natural (Buffer_Last) ):= To_String (Buffer (Buffer'First .. Buffer_Last) );
+      Last := Natural (Buffer_Last);
+   exception -- Read
+      when Constraint_Error =>
+         raise End_Of_Stream;
+   end Get;
+
+   procedure Get_Line (Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out String; Last : out Natural) is
+      Buffer : Ada.Streams.Stream_Element_Array
+                  (Ada.Streams.Stream_Element_Offset (Item'First) .. Ada.Streams.Stream_Element_Offset (Item'Last) );
+
+      Buffer_Last : Ada.Streams.Stream_Element_Offset;
+
+      use type Ada.Streams.Stream_Element_Offset;
+   begin -- Get_Line
+      if Item'Length <= 0 then
+         Last := Item'First - 1;
+
+         return;
+      end if;
+
+      Get (Stream => Stream, Item => Buffer (Buffer'First) );
+      Buffer_Last := Buffer'First;
+
+      if Buffer'Length > 1 then
+         Find_Line_Terminators : for Index in Buffer'First + 1 .. Buffer'Last loop
+            Read_Element (Stream => Stream, Item => Buffer (Index) );
+
+            exit when Is_Line_Ending (Buffer (Index) );
+
+            Buffer_Last := Index;
+         end loop Find_Line_Terminators;
+      end if;
+
+      Item (Item'First .. Natural (Buffer_Last) ):= To_String (Buffer (Buffer'First .. Buffer_Last) );
+      Last := Natural (Buffer_Last);
+   end Get_Line;
 
    function To_Stream (Item : String) return Ada.Streams.Stream_Element_Array is
       Result : Ada.Streams.Stream_Element_Array
